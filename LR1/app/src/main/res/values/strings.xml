@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Converter</string>
+    <string name="label_from">From:</string>
+    <string name="label_to">To:</string>
+    <string name="content_desc_from_label">Source field label</string>
+    <string name="content_desc_to_label">Target field label</string>
+    <string name="content_desc_input_field">Input value field</string>
+    <string name="content_desc_output_field">Output value field</string>
+    <string name="content_desc_swap_button">Swap units</string>
+    <string name="content_desc_copy_input">Copy input value</string>
+    <string name="content_desc_copy_output">Copy output value</string>
+</resources>

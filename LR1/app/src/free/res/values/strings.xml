@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Free flavor specific resources -->
+<resources>
+    <string name="app_name">Unit Converter Free</string>
+    <string name="flavor_name">Free</string>
+</resources>

@@ -1,0 +1,12 @@
+.idea
+.gradle
+build
+local.*
+*.iml
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+*.log
+.DS_Store
+*.swp
+*~
+
