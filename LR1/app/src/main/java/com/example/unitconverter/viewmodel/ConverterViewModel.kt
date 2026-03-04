@@ -395,6 +395,7 @@ class ConverterViewModel : ViewModel() {
 
         if (input.isEmpty() || input == ".") {
             _conversionResult.value = null
+            _outputValue.value = ""
             return
         }
 
@@ -402,6 +403,7 @@ class ConverterViewModel : ViewModel() {
         if (inputDouble == null) {
             _error.value = "Invalid input"
             _conversionResult.value = null
+            _outputValue.value = ""
             return
         }
 
@@ -423,6 +425,7 @@ class ConverterViewModel : ViewModel() {
                 toUnit = to,
                 formattedResult = formatted
             )
+            _outputValue.value = formatNumber(result)
             _error.value = null
         } catch (e: Exception) {
             _error.value = "Conversion error: ${e.message}"
@@ -483,16 +486,6 @@ class ConverterViewModel : ViewModel() {
 
         _inputValue.value = formatted
         performConversion()
-
-        // Update output value from conversion result
-        _conversionResult.value?.let { result ->
-            val outputFormatted = if (result.outputValue == result.outputValue.toLong().toDouble()) {
-                result.outputValue.toLong().toString()
-            } else {
-                String.format("%.6f", result.outputValue).trimEnd('0').trimEnd('.')
-            }
-            _outputValue.value = outputFormatted
-        }
     }
 
     /**
