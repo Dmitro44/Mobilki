@@ -18,8 +18,6 @@ class CurrencyConverter : Converter {
             "EUR" to 1.08,      // 1 EUR = 1.08 USD
             "GBP" to 1.27,      // 1 GBP = 1.27 USD
             "RUB" to 0.011,     // 1 RUB = 0.011 USD
-            "JPY" to 0.0067,    // 1 JPY = 0.0067 USD
-            "CNY" to 0.14,      // 1 CNY = 0.14 USD
             "UAH" to 0.027,     // 1 UAH = 0.027 USD
             "BYN" to 0.31       // 1 BYN = 0.31 USD
         )
@@ -30,8 +28,6 @@ class CurrencyConverter : Converter {
         UnitItem("EUR", "Euro", "\u20AC", CATEGORY_ID),
         UnitItem("GBP", "British Pound", "\u00A3", CATEGORY_ID),
         UnitItem("RUB", "Russian Ruble", "\u20BD", CATEGORY_ID),
-        UnitItem("JPY", "Japanese Yen", "\u00A5", CATEGORY_ID),
-        UnitItem("CNY", "Chinese Yuan", "\u00A5", CATEGORY_ID),
         UnitItem("UAH", "Ukrainian Hryvnia", "\u20B4", CATEGORY_ID),
         UnitItem("BYN", "Belarusian Ruble", "Br", CATEGORY_ID)
     )
