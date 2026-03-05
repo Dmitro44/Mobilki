@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("/home/velebes/keystores/upload-keystore.jks")
+            storePassword = "RDBC2006"
+            keyAlias = "upload"
+            keyPassword = "RDBC2006"
+        }
+    }
     namespace = "com.example.unitconverter"
     compileSdk = 36
 
@@ -54,6 +62,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
