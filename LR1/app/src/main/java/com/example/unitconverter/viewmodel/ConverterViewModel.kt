@@ -10,6 +10,7 @@ import com.example.unitconverter.converter.WeightConverter
 import com.example.unitconverter.model.Category
 import com.example.unitconverter.model.ConversionResult
 import com.example.unitconverter.model.UnitItem
+import kotlin.math.pow
 
 /**
  * ViewModel for the Unit Converter application.
@@ -162,71 +163,67 @@ class ConverterViewModel : ViewModel() {
     }
 
     /**
-     * Swaps source and target units
+     * Swaps source and target units.
+     *
+     * The authoritative source of truth for the current numeric value is ALWAYS
+     * _conversionResult (which stores raw Doubles), never the formatted strings in
+     * _inputValue / _outputValue.  Formatted strings can silently lose precision for
+     * very small numbers (e.g. 1e-11 formats to "0" with fixed-decimal rounding), so
+     * reading them back would corrupt the conversion chain.
      */
     fun swapUnits() {
         val tempFrom = _fromUnit.value
-        val tempTo = _toUnit.value
+        val tempTo   = _toUnit.value
 
-        // Parse current numeric values (if any)
-        val prevInputDouble = _inputValue.value?.toDoubleOrNull()
-        val prevOutputDouble = _outputValue.value?.toDoubleOrNull()
-
-        // If textual values could not be parsed, try to use the last conversion result
+        // ── Step 1: Capture the precise numeric state BEFORE touching anything ────
+        //
+        // _conversionResult always holds the full-precision Double values produced by
+        // the last successful conversion.  We must read it here, before we reassign
+        // _fromUnit / _toUnit (which would trigger observers that might clear it).
         val conv = _conversionResult.value
-        val convInput = conv?.inputValue
-        val convOutput = conv?.outputValue
 
-        // Swap units
+        // After the swap:
+        //   • the new "input" should be what was previously the OUTPUT value
+        //     (so the user is now converting in the opposite direction from the same quantity)
+        //   • the new "output" is whatever the converter returns for that input
+        //
+        // conv.outputValue is the precise Double for the current output field.
+        // conv.inputValue  is the precise Double for the current input field.
+        // We prefer outputValue; fall back to inputValue if no result exists yet.
+        val newInputValue: Double? = conv?.outputValue ?: conv?.inputValue
+
+        // ── Step 2: Swap the unit selections ──────────────────────────────────────
         _fromUnit.value = tempTo
-        _toUnit.value = tempFrom
+        _toUnit.value   = tempFrom
 
-        // If we don't have an explicit prevOutputDouble but do have prevInputDouble, compute the output
-        // using the current converter (old units) so we can preserve the same physical quantity after swapping.
-        var computedPrevOutput = prevOutputDouble
-        val category = _selectedCategory.value
-        val currentConverter = category?.let { converters[it.id] }
-        if (computedPrevOutput == null && prevInputDouble != null && currentConverter != null && tempFrom != null && tempTo != null) {
-            try {
-                computedPrevOutput = currentConverter.convert(prevInputDouble, tempFrom, tempTo)
-            } catch (_: Exception) {
-                // ignore and leave computedPrevOutput null
-            }
-        }
-
-        // Choose numeric base for new input: prefer previous output (keeps same quantity), else previous input;
-        // if both are null, fall back to last conversion result.
-        val baseValue = computedPrevOutput ?: prevInputDouble ?: convOutput ?: convInput
-
-        if (baseValue == null) {
-            // Nothing to compute, clear values
-            _inputValue.value = ""
-            _outputValue.value = ""
-            _conversionResult.value = null
+        // ── Step 3: Handle the case where there is no value to convert ────────────
+        if (newInputValue == null) {
+            _inputValue.value        = ""
+            _outputValue.value       = ""
+            _conversionResult.value  = null
             return
         }
 
-        // Compute new conversion with swapped units using previously obtained converter
-        val converter = currentConverter
+        // ── Step 4: Run a fresh conversion with the swapped units ─────────────────
+        val category  = _selectedCategory.value
+        val converter = category?.let { converters[it.id] }
         if (converter == null) {
             _error.value = "Converter not found"
             return
         }
 
-        // baseValue is the numeric quantity in the new 'from' unit context
-        // Format and set input
-        _inputValue.value = formatNumber(baseValue)
+        // Format and publish the new input (the old precise output value)
+        _inputValue.value = formatNumber(newInputValue)
 
-        // Perform conversion: from (new) -> to (new)
         try {
-            val result = converter.convert(baseValue, _fromUnit.value!!, _toUnit.value!!)
+            val result = converter.convert(newInputValue, _fromUnit.value!!, _toUnit.value!!)
             _outputValue.value = formatNumber(result)
 
             _conversionResult.value = ConversionResult(
-                inputValue = baseValue,
-                outputValue = result,
-                fromUnit = _fromUnit.value!!,
-                toUnit = _toUnit.value!!,
+                inputValue      = newInputValue,
+                outputValue     = result,
+                fromUnit        = _fromUnit.value!!,
+                toUnit          = _toUnit.value!!,
                 formattedResult = "${formatNumber(result)} ${_toUnit.value!!.symbol}"
             )
             _error.value = null
@@ -235,13 +232,36 @@ class ConverterViewModel : ViewModel() {
         }
     }
 
-    // Helper to format a Double as display string (no unit symbol)
+    // Helper to format a Double as display string (no unit symbol).
+    // Uses significant-figure rounding so that very small numbers like 1e-11
+    // are never silently collapsed to 0 by fixed-decimal rounding.
     private fun formatNumber(value: Double): String {
-        return if (value == value.toLong().toDouble()) {
-            value.toLong().toString()
-        } else {
-            String.format("%.6f", value).trimEnd('0').trimEnd('.')
+        if (value == 0.0) return "0"
+
+        val abs = kotlin.math.abs(value)
+
+        // Round to 10 *significant* figures instead of 10 *decimal places*.
+        // e.g. 1.0011e-11 → magnitude = -11, so we keep digits at 1e-21 scale.
+        val magnitude = kotlin.math.floor(kotlin.math.log10(abs)).toInt()
+        val scale = 10.0.pow((10 - 1 - magnitude).toDouble())
+        val rounded = kotlin.math.round(value * scale) / scale
+
+        if (rounded == 0.0) return "0"
+
+        // Whole numbers: show without decimal point
+        if (rounded == rounded.toLong().toDouble() && abs >= 1.0) {
+            return rounded.toLong().toString()
         }
+
+        // For very small or very large numbers outside a readable range, use enough
+        // decimal places to show 10 significant figures.
+        val decimalPlaces = maxOf(0, 10 - 1 - magnitude)
+        return String.format("%.${decimalPlaces}f", rounded).trimEnd('0').trimEnd('.')
+    }
+    
+    // Helper to format user input (preserves trailing zeros and decimal point)
+    private fun formatUserInput(value: String): String {
+        return value  // Return as-is to allow "0." input
     }
 
     /**
@@ -365,11 +385,7 @@ class ConverterViewModel : ViewModel() {
             val result = converter.convert(outputDouble, to, from)
             val formatted = formatResult(result, from)
 
-            _inputValue.value = if (result == result.toLong().toDouble()) {
-                result.toLong().toString()
-            } else {
-                String.format("%.6f", result).trimEnd('0').trimEnd('.')
-            }
+            _inputValue.value = formatNumber(result)
 
             _conversionResult.value = ConversionResult(
                 inputValue = result,
@@ -434,15 +450,11 @@ class ConverterViewModel : ViewModel() {
     }
 
     /**
-     * Formats the result for display
+     * Formats the result for display (includes unit symbol).
+     * Delegates number formatting to formatNumber() so precision is consistent.
      */
     private fun formatResult(value: Double, unit: UnitItem): String {
-        val formatted = if (value == value.toLong().toDouble()) {
-            value.toLong().toString()
-        } else {
-            String.format("%.6f", value).trimEnd('0').trimEnd('.')
-        }
-        return "$formatted ${unit.symbol}"
+        return "${formatNumber(value)} ${unit.symbol}"
     }
 
     /**
@@ -477,14 +489,8 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        // Format the value properly (remove trailing zeros for display)
-        val formatted = if (parsed == parsed.toLong().toDouble()) {
-            parsed.toLong().toString()
-        } else {
-            trimmed // Keep original string representation
-        }
-
-        _inputValue.value = formatted
+        // Keep user input as-is (preserve trailing zeros and decimal point)
+        _inputValue.value = trimmed
         performConversion()
     }
 
@@ -513,14 +519,8 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        // Format the value properly
-        val formatted = if (parsed == parsed.toLong().toDouble()) {
-            parsed.toLong().toString()
-        } else {
-            trimmed // Keep original string representation
-        }
-
-        _outputValue.value = formatted
+        // Keep user input as-is (preserve trailing zeros and decimal point)
+        _outputValue.value = trimmed
         performReverseConversion()
     }
 }

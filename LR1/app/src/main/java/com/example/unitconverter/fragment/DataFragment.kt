@@ -249,11 +249,11 @@ open class DataFragmentBase : Fragment() {
             if (viewModel.activeField.value == ConverterViewModel.ActiveField.INPUT) {
                 isUpdatingFromViewModel = true
                 val outputText = if (result != null) {
-                    if (result.outputValue == result.outputValue.toLong().toDouble()) {
-                        result.outputValue.toLong().toString()
-                    } else {
-                        String.format("%.6f", result.outputValue).trimEnd('0').trimEnd('.')
-                    }
+                    // Delegate all formatting to the ViewModel's outputValue LiveData so
+                    // that the fragment never applies its own (lower-precision) formatter.
+                    // Reading result.outputValue here with "%.6f" would collapse values like
+                    // 1e-11 to "0", which corrupts _outputValue via the TextWatcher.
+                    viewModel.outputValue.value ?: ""
                 } else {
                     ""
                 }
