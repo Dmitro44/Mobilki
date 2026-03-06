@@ -164,55 +164,31 @@ class ConverterViewModel : ViewModel() {
 
     /**
      * Swaps source and target units.
-     *
-     * The authoritative source of truth for the current numeric value is ALWAYS
-     * _conversionResult (which stores raw Doubles), never the formatted strings in
-     * _inputValue / _outputValue.  Formatted strings can silently lose precision for
-     * very small numbers (e.g. 1e-11 formats to "0" with fixed-decimal rounding), so
-     * reading them back would corrupt the conversion chain.
      */
     fun swapUnits() {
         val tempFrom = _fromUnit.value
-        val tempTo   = _toUnit.value
+        val tempTo = _toUnit.value
 
-        // ── Step 1: Capture the precise numeric state BEFORE touching anything ────
-        //
-        // _conversionResult always holds the full-precision Double values produced by
-        // the last successful conversion.  We must read it here, before we reassign
-        // _fromUnit / _toUnit (which would trigger observers that might clear it).
         val conv = _conversionResult.value
-
-        // After the swap:
-        //   • the new "input" should be what was previously the OUTPUT value
-        //     (so the user is now converting in the opposite direction from the same quantity)
-        //   • the new "output" is whatever the converter returns for that input
-        //
-        // conv.outputValue is the precise Double for the current output field.
-        // conv.inputValue  is the precise Double for the current input field.
-        // We prefer outputValue; fall back to inputValue if no result exists yet.
         val newInputValue: Double? = conv?.outputValue ?: conv?.inputValue
 
-        // ── Step 2: Swap the unit selections ──────────────────────────────────────
         _fromUnit.value = tempTo
-        _toUnit.value   = tempFrom
+        _toUnit.value = tempFrom
 
-        // ── Step 3: Handle the case where there is no value to convert ────────────
         if (newInputValue == null) {
-            _inputValue.value        = ""
-            _outputValue.value       = ""
-            _conversionResult.value  = null
+            _inputValue.value = ""
+            _outputValue.value = ""
+            _conversionResult.value = null
             return
         }
 
-        // ── Step 4: Run a fresh conversion with the swapped units ─────────────────
-        val category  = _selectedCategory.value
+        val category = _selectedCategory.value
         val converter = category?.let { converters[it.id] }
         if (converter == null) {
             _error.value = "Converter not found"
             return
         }
 
-        // Format and publish the new input (the old precise output value)
         _inputValue.value = formatNumber(newInputValue)
 
         try {
@@ -220,10 +196,10 @@ class ConverterViewModel : ViewModel() {
             _outputValue.value = formatNumber(result)
 
             _conversionResult.value = ConversionResult(
-                inputValue      = newInputValue,
-                outputValue     = result,
-                fromUnit        = _fromUnit.value!!,
-                toUnit          = _toUnit.value!!,
+                inputValue = newInputValue,
+                outputValue = result,
+                fromUnit = _fromUnit.value!!,
+                toUnit = _toUnit.value!!,
                 formattedResult = "${formatNumber(result)} ${_toUnit.value!!.symbol}"
             )
             _error.value = null
@@ -232,36 +208,24 @@ class ConverterViewModel : ViewModel() {
         }
     }
 
-    // Helper to format a Double as display string (no unit symbol).
-    // Uses significant-figure rounding so that very small numbers like 1e-11
-    // are never silently collapsed to 0 by fixed-decimal rounding.
+    // Formats a Double for display without a unit symbol.
     private fun formatNumber(value: Double): String {
         if (value == 0.0) return "0"
 
         val abs = kotlin.math.abs(value)
 
-        // Round to 10 *significant* figures instead of 10 *decimal places*.
-        // e.g. 1.0011e-11 → magnitude = -11, so we keep digits at 1e-21 scale.
         val magnitude = kotlin.math.floor(kotlin.math.log10(abs)).toInt()
         val scale = 10.0.pow((10 - 1 - magnitude).toDouble())
         val rounded = kotlin.math.round(value * scale) / scale
 
         if (rounded == 0.0) return "0"
 
-        // Whole numbers: show without decimal point
         if (rounded == rounded.toLong().toDouble() && abs >= 1.0) {
             return rounded.toLong().toString()
         }
 
-        // For very small or very large numbers outside a readable range, use enough
-        // decimal places to show 10 significant figures.
         val decimalPlaces = maxOf(0, 10 - 1 - magnitude)
         return String.format("%.${decimalPlaces}f", rounded).trimEnd('0').trimEnd('.')
-    }
-    
-    // Helper to format user input (preserves trailing zeros and decimal point)
-    private fun formatUserInput(value: String): String {
-        return value  // Return as-is to allow "0." input
     }
 
     /**
