@@ -1,0 +1,68 @@
+@startuml UnitConverter_ObjectDiagram
+
+skinparam backgroundColor #FAFAFA
+skinparam object {
+    BackgroundColor #EEF4FB
+    BorderColor     #000000
+    ArrowColor      #000000
+    FontSize        11
+    Shadowing       false
+    RoundCorner     0
+}
+
+' UI
+object "dataFragment : DataFragment" as df {
+    binding = FragmentDataBinding
+}
+
+object "keyboardFragment : KeyboardFragment" as kf {
+    binding = FragmentKeyboardBinding
+}
+
+' ViewModel
+object "vm : ConverterViewModel" as vm {
+    inputValue       = "1"
+    outputValue      = "1000"
+    fromUnit         = unitKm
+    toUnit           = unitM
+    selectedCategory = "Distance"
+}
+
+' Converter
+object "distanceConverter : DistanceConverter" as conv {
+    convert(1.0, km, m) = 1000.0
+}
+
+' Model
+object "result : ConversionResult" as result {
+    inputValue  = 1.0
+    outputValue = 1000.0
+    fromUnit    = unitKm
+    toUnit      = unitM
+}
+
+object "unitKm : UnitItem" as unitKm {
+    id        = "km"
+    name      = "Kilometer"
+    symbol    = "km"
+    categoryId = "distance"
+}
+
+object "unitM : UnitItem" as unitM {
+    id        = "m"
+    name      = "Meter"
+    symbol    = "m"
+    categoryId = "distance"
+}
+
+' Relationships
+df -- vm : "observes and sends input"
+kf -- vm : "sends key presses"
+vm -- conv : "uses"
+vm -- unitKm : "from unit"
+vm -- unitM : "to unit"
+conv -- result : "creates result"
+result -- unitKm : "fromUnit"
+result -- unitM : "toUnit"
+
+@enduml

@@ -1,0 +1,62 @@
+@startuml UnitConverter_ObjectDiagram
+
+title Unit Converter — Object Diagram\n(Snapshot: 1 km → 1000 m)
+
+skinparam backgroundColor #FAFAFA
+skinparam object {
+    BackgroundColor #EEF4FB
+    BorderColor     #2C6FAC
+    ArrowColor      #2C6FAC
+    FontSize        11
+}
+
+' ── UI ──
+object "dataFragment : DataFragment" as df {
+    input  = "1"
+    output = "1000"
+}
+
+object "keyboardFragment : KeyboardFragment" as kf {
+}
+
+' ── ViewModel ──
+object "vm : ConverterViewModel" as vm {
+    inputValue  = "1"
+    outputValue = "1000"
+    fromUnit    = km
+    toUnit      = m
+    category    = Distance
+}
+
+' ── Converter ──
+object "distanceConverter : DistanceConverter" as conv {
+    convert(1.0, km, m) = 1000.0
+}
+
+' ── Model ──
+object "result : ConversionResult" as result {
+    from   = "km"
+    to     = "m"
+    output = 1000.0
+}
+
+object "unitKm : UnitItem" as km {
+    id     = "km"
+    symbol = "km"
+}
+
+object "unitM : UnitItem" as m {
+    id     = "m"
+    symbol = "m"
+}
+
+' ── Relationships ──
+df  -->  vm   : "user input /\nspinner events"
+kf  -->  vm   : "key presses"
+vm  ..>  df   : "LiveData\nobserve"
+vm  -->  conv : "performConversion()"
+conv --> result : "returns"
+result --> km : "fromUnit"
+result --> m  : "toUnit"
+
+@enduml
