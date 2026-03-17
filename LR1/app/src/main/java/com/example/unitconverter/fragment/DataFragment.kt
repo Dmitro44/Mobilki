@@ -4,7 +4,10 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.ActionMode
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -45,7 +48,6 @@ open class DataFragmentBase : Fragment() {
         
         // Disable system keyboard for EditTexts
         binding.etInput.showSoftInputOnFocus = false
-        binding.etOutput.showSoftInputOnFocus = false
         
         setupClickListeners()
         setupSpinnerListeners()
@@ -80,6 +82,13 @@ open class DataFragmentBase : Fragment() {
     }
 
     private fun setupClickListeners() {
+        val disableActionMode = object : ActionMode.Callback {
+            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean = false
+            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean = false
+            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean = false
+            override fun onDestroyActionMode(mode: ActionMode?) {}
+        }
+
         // Set active field when clicking on input EditText
         binding.etInput.setOnClickListener {
             viewModel.setActiveField(ConverterViewModel.ActiveField.INPUT)
@@ -89,15 +98,20 @@ open class DataFragmentBase : Fragment() {
                 viewModel.setActiveField(ConverterViewModel.ActiveField.INPUT)
             }
         }
-
-        // Set active field when clicking on output EditText
-        binding.etOutput.setOnClickListener {
-            viewModel.setActiveField(ConverterViewModel.ActiveField.OUTPUT)
+        binding.etInput.setOnLongClickListener { true }
+        binding.etInput.customSelectionActionModeCallback = disableActionMode
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            binding.etInput.customInsertionActionModeCallback = disableActionMode
         }
-        binding.etOutput.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                viewModel.setActiveField(ConverterViewModel.ActiveField.OUTPUT)
-            }
+        
+        // Disable context menu and selection on the read-only output field
+        binding.etOutput.setOnLongClickListener { true }
+        binding.etOutput.setOnClickListener { } // Consume clicks so they don't trigger anything
+        binding.etOutput.setOnTouchListener { _, _ -> true } // Consume all touch events completely
+        
+        binding.etOutput.customSelectionActionModeCallback = disableActionMode
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            binding.etOutput.customInsertionActionModeCallback = disableActionMode
         }
     }
 
@@ -174,22 +188,8 @@ open class DataFragmentBase : Fragment() {
         })
         
         // TextWatcher for output field
-        binding.etOutput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            
-            override fun afterTextChanged(s: Editable?) {
-                // Skip if this change came from ViewModel update (not user action)
-                if (isUpdatingFromViewModel) return
-                
-                val text = s?.toString() ?: ""
-                // Set active field to OUTPUT when user types/pastes into output
-                viewModel.setActiveField(ConverterViewModel.ActiveField.OUTPUT)
-                // Update ViewModel with new output value (triggers reverse conversion)
-                viewModel.setOutputValueString(text)
-            }
-        })
+        // Read-only output field doesn't need TextWatcher since it won't receive input
+        // and we disabled focus and touch events
     }
 
     private fun setupObservers() {
@@ -248,7 +248,8 @@ open class DataFragmentBase : Fragment() {
             val displayValue = value.ifEmpty { "" }
             if (binding.etOutput.text.toString() != displayValue) {
                 binding.etOutput.setText(displayValue)
-                binding.etOutput.setSelection(displayValue.length)
+                // Removed setSelection here because the output is read-only
+                // and calling it can sometimes force the cursor to be visible
             }
             isUpdatingFromViewModel = false
         }
@@ -301,9 +302,6 @@ open class DataFragmentBase : Fragment() {
             when (field) {
                 ConverterViewModel.ActiveField.INPUT -> {
                     binding.etInput.requestFocus()
-                }
-                ConverterViewModel.ActiveField.OUTPUT -> {
-                    binding.etOutput.requestFocus()
                 }
                 else -> {}
             }
