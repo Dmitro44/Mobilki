@@ -211,23 +211,51 @@ class ConverterViewModel : ViewModel() {
     }
 
     // Formats a Double for display without a unit symbol.
+    // Uses scientific notation for numbers with >15 significant digits or <0.000001
+    // Displays full precision (up to Double's ~15-17 digit limit) otherwise
     private fun formatNumber(value: Double): String {
         if (value == 0.0) return "0"
+        if (value.isNaN() || value.isInfinite()) return value.toString()
 
         val abs = kotlin.math.abs(value)
 
-        val magnitude = kotlin.math.floor(kotlin.math.log10(abs)).toInt()
-        val scale = 10.0.pow((10 - 1 - magnitude).toDouble())
-        val rounded = kotlin.math.round(value * scale) / scale
-
-        if (rounded == 0.0) return "0"
-
-        if (rounded == rounded.toLong().toDouble() && abs >= 1.0) {
-            return rounded.toLong().toString()
+        // Use scientific notation for very small numbers (< 0.000001)
+        if (abs < 0.000001) {
+            return String.format("%.14e", value)
+                .replace("e-0", "e-")
+                .replace("e+0", "e+")
+                .trimEnd('0')
+                .replace(Regex("(\\.[0-9]*?)0*e"), "$1e")
+                .replace(".e", "e")
         }
 
-        val decimalPlaces = maxOf(0, 10 - 1 - magnitude)
-        return String.format("%.${decimalPlaces}f", rounded).trimEnd('0').trimEnd('.')
+        // For very large numbers, check significant digits
+        val stringRepresentation = abs.toString()
+        val digitsOnly = stringRepresentation.replace(".", "").replace("-", "").trimStart('0')
+        
+        // Use scientific notation if more than 15 significant digits
+        if (digitsOnly.length > 15) {
+            return String.format("%.14e", value)
+                .replace("e-0", "e-")
+                .replace("e+0", "e+")
+                .trimEnd('0')
+                .replace(Regex("(\\.[0-9]*?)0*e"), "$1e")
+                .replace(".e", "e")
+        }
+
+        // For integers in valid range, display as whole numbers
+        if (value == value.toLong().toDouble() && abs < 1e15) {
+            return value.toLong().toString()
+        }
+
+        // For decimal numbers in valid range, display with full precision
+        // Calculate magnitude and use appropriate decimal places
+        val magnitude = kotlin.math.floor(kotlin.math.log10(abs)).toInt()
+        val maxDecimalPlaces = maxOf(0, 15 - magnitude - 1)
+        
+        return String.format("%.${maxDecimalPlaces}f", value)
+            .trimEnd('0')
+            .trimEnd('.')
     }
 
     /**

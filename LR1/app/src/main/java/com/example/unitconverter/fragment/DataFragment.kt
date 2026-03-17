@@ -8,6 +8,7 @@ import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -107,7 +108,24 @@ open class DataFragmentBase : Fragment() {
         // Disable context menu and selection on the read-only output field
         binding.etOutput.setOnLongClickListener { true }
         binding.etOutput.setOnClickListener { } // Consume clicks so they don't trigger anything
-        binding.etOutput.setOnTouchListener { _, _ -> true } // Consume all touch events completely
+        
+        // Allow horizontal scrolling but block focus/editing
+        binding.etOutput.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                v.performClick()
+            }
+            when (event.action) {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                    // Allow the EditText to handle down/move for scrolling
+                    v.parent.requestDisallowInterceptTouchEvent(true)
+                    false 
+                }
+                else -> {
+                    // Block other events like clicks or long presses from triggering menus
+                    false
+                }
+            }
+        }
         
         binding.etOutput.customSelectionActionModeCallback = disableActionMode
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
