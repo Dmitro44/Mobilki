@@ -144,6 +144,8 @@ class ConverterViewModel : ViewModel() {
         // Reset result
         _conversionResult.value = null
         _error.value = null
+
+        _inputValue.value = ""
     }
 
     /**

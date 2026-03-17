@@ -108,7 +108,10 @@ open class DataFragmentBase : Fragment() {
                 if (isUpdatingFromViewModel) return
                 val categories = viewModel.categories.value ?: return
                 if (position in categories.indices) {
-                    viewModel.selectCategory(categories[position])
+                    val category = categories[position]
+                    if (viewModel.selectedCategory.value?.id != category.id) {
+                        viewModel.selectCategory(category)
+                    }
                 }
             }
 
@@ -121,7 +124,10 @@ open class DataFragmentBase : Fragment() {
                 if (isUpdatingFromViewModel) return
                 val units = viewModel.availableUnits.value ?: return
                 if (position in units.indices) {
-                    viewModel.setFromUnit(units[position])
+                    val unit = units[position]
+                    if (viewModel.fromUnit.value?.id != unit.id) {
+                        viewModel.setFromUnit(unit)
+                    }
                 }
             }
 
@@ -134,7 +140,10 @@ open class DataFragmentBase : Fragment() {
                 if (isUpdatingFromViewModel) return
                 val units = viewModel.availableUnits.value ?: return
                 if (position in units.indices) {
-                    viewModel.setToUnit(units[position])
+                    val unit = units[position]
+                    if (viewModel.toUnit.value?.id != unit.id) {
+                        viewModel.setToUnit(unit)
+                    }
                 }
             }
 
