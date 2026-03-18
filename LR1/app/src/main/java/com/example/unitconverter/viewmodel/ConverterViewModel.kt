@@ -10,7 +10,8 @@ import com.example.unitconverter.converter.WeightConverter
 import com.example.unitconverter.model.Category
 import com.example.unitconverter.model.ConversionResult
 import com.example.unitconverter.model.UnitItem
-import kotlin.math.pow
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * ViewModel for the Unit Converter application.
@@ -172,7 +173,7 @@ class ConverterViewModel : ViewModel() {
         val tempTo = _toUnit.value
 
         val conv = _conversionResult.value
-        val newInputValue: Double? = conv?.outputValue ?: conv?.inputValue
+        val newInputValue: BigDecimal? = conv?.outputValue ?: conv?.inputValue
 
         _fromUnit.value = tempTo
         _toUnit.value = tempFrom
@@ -191,11 +192,12 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        _inputValue.value = formatNumber(newInputValue)
+        // Format the number for editing to ensure users can append digits without issues
+        _inputValue.value = formatNumberForEditing(newInputValue)
 
         try {
             val result = converter.convert(newInputValue, _fromUnit.value!!, _toUnit.value!!)
-            _outputValue.value = formatNumber(result)
+            _outputValue.value = formatNumberForEditing(result)
 
             _conversionResult.value = ConversionResult(
                 inputValue = newInputValue,
@@ -210,52 +212,24 @@ class ConverterViewModel : ViewModel() {
         }
     }
 
-    // Formats a Double for display without a unit symbol.
-    // Uses scientific notation for numbers with >15 significant digits or <0.000001
-    // Displays full precision (up to Double's ~15-17 digit limit) otherwise
-    private fun formatNumber(value: Double): String {
-        if (value == 0.0) return "0"
-        if (value.isNaN() || value.isInfinite()) return value.toString()
-
-        val abs = kotlin.math.abs(value)
-
-        // Use scientific notation for very small numbers (< 0.000001)
-        if (abs < 0.000001) {
-            return String.format("%.14e", value)
-                .replace("e-0", "e-")
-                .replace("e+0", "e+")
-                .trimEnd('0')
-                .replace(Regex("(\\.[0-9]*?)0*e"), "$1e")
-                .replace(".e", "e")
-        }
-
-        // For very large numbers, check significant digits
-        val stringRepresentation = abs.toString()
-        val digitsOnly = stringRepresentation.replace(".", "").replace("-", "").trimStart('0')
+    // Formats a BigDecimal for display without a unit symbol.
+    // Uses toPlainString() to avoid scientific notation.
+    private fun formatNumber(value: BigDecimal): String {
+        if (value.compareTo(BigDecimal.ZERO) == 0) return "0"
         
-        // Use scientific notation if more than 15 significant digits
-        if (digitsOnly.length > 15) {
-            return String.format("%.14e", value)
-                .replace("e-0", "e-")
-                .replace("e+0", "e+")
-                .trimEnd('0')
-                .replace(Regex("(\\.[0-9]*?)0*e"), "$1e")
-                .replace(".e", "e")
-        }
+        // Strip trailing zeros and use plain string (no scientific notation)
+        return value.stripTrailingZeros().toPlainString()
+    }
 
-        // For integers in valid range, display as whole numbers
-        if (value == value.toLong().toDouble() && abs < 1e15) {
-            return value.toLong().toString()
-        }
+    /**
+     * Formats a number for editing (user input).
+     * This ensures the output is always in decimal notation (toPlainString).
+     */
+    private fun formatNumberForEditing(value: BigDecimal): String {
+        if (value.compareTo(BigDecimal.ZERO) == 0) return "0"
 
-        // For decimal numbers in valid range, display with full precision
-        // Calculate magnitude and use appropriate decimal places
-        val magnitude = kotlin.math.floor(kotlin.math.log10(abs)).toInt()
-        val maxDecimalPlaces = maxOf(0, 15 - magnitude - 1)
-        
-        return String.format("%.${maxDecimalPlaces}f", value)
-            .trimEnd('0')
-            .trimEnd('.')
+        // Limit to 30 decimal places for safety, then strip trailing zeros
+        return value.setScale(30, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
     }
 
     /**
@@ -362,8 +336,14 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        val outputDouble = output.toDoubleOrNull()
-        if (outputDouble == null) {
+        // Input validation: limit length to prevent performance issues
+        if (output.length > 500) {
+            _error.value = "Input too long"
+            return
+        }
+
+        val outputBigDecimal = try { output.toBigDecimal() } catch (e: Exception) { null }
+        if (outputBigDecimal == null) {
             _error.value = "Invalid input"
             return
         }
@@ -376,14 +356,14 @@ class ConverterViewModel : ViewModel() {
 
         try {
             // Reverse conversion: from toUnit to fromUnit
-            val result = converter.convert(outputDouble, to, from)
+            val result = converter.convert(outputBigDecimal, to, from)
             val formatted = formatResult(result, from)
 
             _inputValue.value = formatNumber(result)
 
             _conversionResult.value = ConversionResult(
                 inputValue = result,
-                outputValue = outputDouble,
+                outputValue = outputBigDecimal,
                 fromUnit = from,
                 toUnit = to,
                 formattedResult = "$output ${to.symbol}"
@@ -409,8 +389,14 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        val inputDouble = input.toDoubleOrNull()
-        if (inputDouble == null) {
+        // Input validation: limit length to prevent performance issues
+        if (input.length > 500) {
+            _error.value = "Input too long"
+            return
+        }
+
+        val inputBigDecimal = try { input.toBigDecimal() } catch (e: Exception) { null }
+        if (inputBigDecimal == null) {
             _error.value = "Invalid input"
             _conversionResult.value = null
             _outputValue.value = ""
@@ -425,11 +411,11 @@ class ConverterViewModel : ViewModel() {
         }
 
         try {
-            val result = converter.convert(inputDouble, from, to)
+            val result = converter.convert(inputBigDecimal, from, to)
             val formatted = formatResult(result, to)
 
             _conversionResult.value = ConversionResult(
-                inputValue = inputDouble,
+                inputValue = inputBigDecimal,
                 outputValue = result,
                 fromUnit = from,
                 toUnit = to,
@@ -447,7 +433,7 @@ class ConverterViewModel : ViewModel() {
      * Formats the result for display (includes unit symbol).
      * Delegates number formatting to formatNumber() so precision is consistent.
      */
-    private fun formatResult(value: Double, unit: UnitItem): String {
+    private fun formatResult(value: BigDecimal, unit: UnitItem): String {
         return "${formatNumber(value)} ${unit.symbol}"
     }
 
@@ -460,8 +446,6 @@ class ConverterViewModel : ViewModel() {
 
     /**
      * Sets the input value from a string (for paste/direct input).
-     * Parses the string to Double safely and performs forward conversion.
-     * Ignores invalid (non-numeric) input by setting empty value.
      */
     fun setInputValueString(value: String) {
         val trimmed = value.trim()
@@ -473,25 +457,25 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        // Try to parse as Double, ignore if invalid
-        val parsed = trimmed.toDoubleOrNull()
+        if (trimmed.length > 500) {
+            _error.value = "Input too long"
+            return
+        }
+
+        val parsed = try { trimmed.toBigDecimal() } catch (e: Exception) { null }
         if (parsed == null) {
-            // Invalid input - ignore or reset
             _inputValue.value = ""
             _outputValue.value = ""
             _conversionResult.value = null
             return
         }
 
-        // Keep user input as-is (preserve trailing zeros and decimal point)
         _inputValue.value = trimmed
         performConversion()
     }
 
     /**
      * Sets the output value from a string (for paste/direct input).
-     * Parses the string to Double safely and performs reverse conversion.
-     * Ignores invalid (non-numeric) input by setting empty value.
      */
     fun setOutputValueString(value: String) {
         val trimmed = value.trim()
@@ -503,17 +487,19 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        // Try to parse as Double, ignore if invalid
-        val parsed = trimmed.toDoubleOrNull()
+        if (trimmed.length > 500) {
+            _error.value = "Input too long"
+            return
+        }
+
+        val parsed = try { trimmed.toBigDecimal() } catch (e: Exception) { null }
         if (parsed == null) {
-            // Invalid input - ignore or reset
             _outputValue.value = ""
             _inputValue.value = ""
             _conversionResult.value = null
             return
         }
 
-        // Keep user input as-is (preserve trailing zeros and decimal point)
         _outputValue.value = trimmed
         performReverseConversion()
     }

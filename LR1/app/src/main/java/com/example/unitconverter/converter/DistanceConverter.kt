@@ -1,6 +1,8 @@
 package com.example.unitconverter.converter
 
 import com.example.unitconverter.model.UnitItem
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * Converter for distance/length units
@@ -12,14 +14,14 @@ class DistanceConverter : Converter {
         
         // Conversion factors to meters (base unit)
         private val TO_METERS = mapOf(
-            "m" to 1.0,
-            "km" to 1000.0,
-            "cm" to 0.01,
-            "mm" to 0.001,
-            "mi" to 1609.344,
-            "yd" to 0.9144,
-            "ft" to 0.3048,
-            "in" to 0.0254
+            "m" to BigDecimal("1.0"),
+            "km" to BigDecimal("1000.0"),
+            "cm" to BigDecimal("0.01"),
+            "mm" to BigDecimal("0.001"),
+            "mi" to BigDecimal("1609.344"),
+            "yd" to BigDecimal("0.9144"),
+            "ft" to BigDecimal("0.3048"),
+            "in" to BigDecimal("0.0254")
         )
     }
     
@@ -38,12 +40,12 @@ class DistanceConverter : Converter {
     
     override fun getAvailableUnits(): List<UnitItem> = units
     
-    override fun convert(value: Double, fromUnit: UnitItem, toUnit: UnitItem): Double {
-        val fromFactor = TO_METERS[fromUnit.id] ?: 1.0
-        val toFactor = TO_METERS[toUnit.id] ?: 1.0
+    override fun convert(value: BigDecimal, fromUnit: UnitItem, toUnit: UnitItem): BigDecimal {
+        val fromFactor = TO_METERS[fromUnit.id] ?: BigDecimal.ONE
+        val toFactor = TO_METERS[toUnit.id] ?: BigDecimal.ONE
         
         // Convert to meters first, then to target unit
-        val valueInMeters = value * fromFactor
-        return valueInMeters / toFactor
+        val valueInMeters = value.multiply(fromFactor)
+        return valueInMeters.divide(toFactor, 30, RoundingMode.HALF_UP)
     }
 }

@@ -1,6 +1,8 @@
 package com.example.unitconverter.converter
 
 import com.example.unitconverter.model.UnitItem
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * Converter for weight/mass units
@@ -12,12 +14,12 @@ class WeightConverter : Converter {
         
         // Conversion factors to grams (base unit)
         private val TO_GRAMS = mapOf(
-            "g" to 1.0,
-            "kg" to 1000.0,
-            "mg" to 0.001,
-            "t" to 1_000_000.0,
-            "lb" to 453.592,
-            "oz" to 28.3495
+            "g" to BigDecimal("1.0"),
+            "kg" to BigDecimal("1000.0"),
+            "mg" to BigDecimal("0.001"),
+            "t" to BigDecimal("1000000.0"),
+            "lb" to BigDecimal("453.592"),
+            "oz" to BigDecimal("28.3495")
         )
     }
     
@@ -34,12 +36,12 @@ class WeightConverter : Converter {
     
     override fun getAvailableUnits(): List<UnitItem> = units
     
-    override fun convert(value: Double, fromUnit: UnitItem, toUnit: UnitItem): Double {
-        val fromFactor = TO_GRAMS[fromUnit.id] ?: 1.0
-        val toFactor = TO_GRAMS[toUnit.id] ?: 1.0
+    override fun convert(value: BigDecimal, fromUnit: UnitItem, toUnit: UnitItem): BigDecimal {
+        val fromFactor = TO_GRAMS[fromUnit.id] ?: BigDecimal.ONE
+        val toFactor = TO_GRAMS[toUnit.id] ?: BigDecimal.ONE
         
         // Convert to grams first, then to target unit
-        val valueInGrams = value * fromFactor
-        return valueInGrams / toFactor
+        val valueInGrams = value.multiply(fromFactor)
+        return valueInGrams.divide(toFactor, 30, RoundingMode.HALF_UP)
     }
 }
