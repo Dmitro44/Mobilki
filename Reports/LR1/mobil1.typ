@@ -1,5 +1,4 @@
 #import "lib/stp2024.typ"
-#import "utils/extract_anchor.typ"
 #show: stp2024.template
 
 #include "lab_title.typ"
@@ -76,12 +75,12 @@
 
 #stp2024.listing[Код метода #emph("swapUnits")][
   ```
-fun swapUnits() {
+    fun swapUnits() {
         val tempFrom = _fromUnit.value
         val tempTo = _toUnit.value
 
         val conv = _conversionResult.value
-        val newInputValue: Double? = conv?.outputValue ?: conv?.inputValue
+        val newInputValue: BigDecimal? = conv?.outputValue ?: conv?.inputValue
 
         _fromUnit.value = tempTo
         _toUnit.value = tempFrom
@@ -100,11 +99,11 @@ fun swapUnits() {
             return
         }
 
-        _inputValue.value = formatNumber(newInputValue)
+        _inputValue.value = formatNumberForEditing(newInputValue)
 
         try {
             val result = converter.convert(newInputValue, _fromUnit.value!!, _toUnit.value!!)
-            _outputValue.value = formatNumber(result)
+            _outputValue.value = formatNumberForEditing(result)
 
             _conversionResult.value = ConversionResult(
                 inputValue = newInputValue,
@@ -135,8 +134,13 @@ fun swapUnits() {
             return
         }
 
-        val inputDouble = input.toDoubleOrNull()
-        if (inputDouble == null) {
+        if (input.length > 500) {
+            _error.value = "Input too long"
+            return
+        }
+
+        val inputBigDecimal = try { input.toBigDecimal() } catch (e: Exception) { null }
+        if (inputBigDecimal == null) {
             _error.value = "Invalid input"
             _conversionResult.value = null
             _outputValue.value = ""
@@ -151,11 +155,11 @@ fun swapUnits() {
         }
 
         try {
-            val result = converter.convert(inputDouble, from, to)
+            val result = converter.convert(inputBigDecimal, from, to)
             val formatted = formatResult(result, to)
 
             _conversionResult.value = ConversionResult(
-                inputValue = inputDouble,
+                inputValue = inputBigDecimal,
                 outputValue = result,
                 fromUnit = from,
                 toUnit = to,
@@ -180,14 +184,14 @@ class DistanceConverter : Converter {
         
         // Conversion factors to meters (base unit)
         private val TO_METERS = mapOf(
-            "m" to 1.0,
-            "km" to 1000.0,
-            "cm" to 0.01,
-            "mm" to 0.001,
-            "mi" to 1609.344,
-            "yd" to 0.9144,
-            "ft" to 0.3048,
-            "in" to 0.0254
+            "m" to BigDecimal("1.0"),
+            "km" to BigDecimal("1000.0"),
+            "cm" to BigDecimal("0.01"),
+            "mm" to BigDecimal("0.001"),
+            "mi" to BigDecimal("1609.344"),
+            "yd" to BigDecimal("0.9144"),
+            "ft" to BigDecimal("0.3048"),
+            "in" to BigDecimal("0.0254")
         )
     }
     
@@ -206,13 +210,13 @@ class DistanceConverter : Converter {
     
     override fun getAvailableUnits(): List<UnitItem> = units
     
-    override fun convert(value: Double, fromUnit: UnitItem, toUnit: UnitItem): Double {
-        val fromFactor = TO_METERS[fromUnit.id] ?: 1.0
-        val toFactor = TO_METERS[toUnit.id] ?: 1.0
+    override fun convert(value: BigDecimal, fromUnit: UnitItem, toUnit: UnitItem): BigDecimal {
+        val fromFactor = TO_METERS[fromUnit.id] ?: BigDecimal.ONE
+        val toFactor = TO_METERS[toUnit.id] ?: BigDecimal.ONE
         
         // Convert to meters first, then to target unit
-        val valueInMeters = value * fromFactor
-        return valueInMeters / toFactor
+        val valueInMeters = value.multiply(fromFactor)
+        return valueInMeters.divide(toFactor, 30, RoundingMode.HALF_UP)
     }
 }
   ```
