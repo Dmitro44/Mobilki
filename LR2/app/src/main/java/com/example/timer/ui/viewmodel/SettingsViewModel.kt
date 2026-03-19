@@ -24,8 +24,19 @@ import kotlinx.coroutines.launch
  * @param repository Repository for preference operations
  */
 class SettingsViewModel(
-    private val repository: PreferencesRepository
+    private val repository: PreferencesRepository,
+    private val timerRepository: com.example.timer.domain.repository.TimerRepository
 ) : ViewModel() {
+    
+    /**
+     * StateFlow of all sequences to check if "Delete All" should be shown
+     */
+    val sequences = timerRepository.getAllSequences()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     
     /**
      * StateFlow of user preferences
@@ -38,6 +49,15 @@ class SettingsViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = UserPreferences()
         )
+    
+    /**
+     * Delete all timer sequences
+     */
+    fun deleteAllSequences() {
+        viewModelScope.launch {
+            timerRepository.deleteAllSequences()
+        }
+    }
     
     /**
      * Toggle dark theme on/off

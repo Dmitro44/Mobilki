@@ -21,7 +21,8 @@ import kotlinx.coroutines.launch
  * with WhileSubscribed timeout to stop collection when UI is not visible
  */
 class MainViewModel(
-    private val repository: TimerRepository
+    private val repository: TimerRepository,
+    private val preferencesRepository: com.example.timer.domain.repository.PreferencesRepository
 ) : ViewModel() {
     
     /**
@@ -34,6 +35,16 @@ class MainViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
+        )
+        
+    /**
+     * StateFlow of user preferences to adjust UI based on font size
+     */
+    val userPreferences = preferencesRepository.userPreferences
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = com.example.timer.data.local.preferences.UserPreferences()
         )
     
     /**

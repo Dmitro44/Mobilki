@@ -50,7 +50,7 @@ class ViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(MainViewModel::class.java) -> {
-                MainViewModel(timerRepository) as T
+                MainViewModel(timerRepository, preferencesRepository) as T
             }
             modelClass.isAssignableFrom(TimerViewModel::class.java) -> {
                 TimerViewModel() as T
@@ -59,7 +59,7 @@ class ViewModelFactory(
                 EditViewModel(timerRepository) as T
             }
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> {
-                SettingsViewModel(preferencesRepository) as T
+                SettingsViewModel(preferencesRepository, timerRepository) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

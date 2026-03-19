@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,7 +49,9 @@ fun SettingsScreen(
     val context = LocalContext.current
     val activity = context as? com.example.timer.MainActivity
     val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
+    val sequences by viewModel.sequences.collectAsStateWithLifecycle()
     var showResetDialog by remember { mutableStateOf(false) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
     
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -143,6 +146,25 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.reset_to_defaults))
             }
+            
+            // Delete All Sequences Section
+            if (sequences.isNotEmpty()) {
+                OutlinedButton(
+                    onClick = { showDeleteAllDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteSweep,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.delete_all_sequences))
+                }
+            }
         }
     }
     
@@ -167,6 +189,33 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Delete all confirmation dialog
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text(stringResource(R.string.delete_all_sequences)) },
+            text = { Text(stringResource(R.string.delete_all_confirmation)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteAllSequences()
+                        showDeleteAllDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete_all_btn))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }

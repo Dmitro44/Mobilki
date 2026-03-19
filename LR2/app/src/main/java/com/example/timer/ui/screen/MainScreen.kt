@@ -42,7 +42,13 @@ fun MainScreen(
     modifier: Modifier = Modifier
 ) {
     val sequences by viewModel.sequences.collectAsStateWithLifecycle()
-    var showDeleteAllDialog by remember { mutableStateOf(false) }
+    val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
+    
+    val titleText = if (preferences.fontSize == com.example.timer.data.local.preferences.FontSize.EXTRA_LARGE) {
+        stringResource(R.string.timer_sequences_short)
+    } else {
+        stringResource(R.string.timer_sequences)
+    }
     
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -50,23 +56,12 @@ fun MainScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = stringResource(R.string.timer_sequences),
+                        text = titleText,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     ) 
                 },
                 actions = {
-                    // Delete all button
-                    if (sequences.isNotEmpty()) {
-                        IconButton(onClick = { showDeleteAllDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = stringResource(R.string.delete_all_sequences),
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                    
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
@@ -110,33 +105,6 @@ fun MainScreen(
                     .padding(paddingValues)
             )
         }
-    }
-
-    // Delete all confirmation dialog
-    if (showDeleteAllDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text(stringResource(R.string.delete_all_sequences)) },
-            text = { Text(stringResource(R.string.delete_all_confirmation)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteAllSequences()
-                        showDeleteAllDialog = false
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(R.string.delete_all_btn))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
     }
 }
 

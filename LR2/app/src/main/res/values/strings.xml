@@ -17,6 +17,7 @@
 
     <!-- Main Screen -->
     <string name="timer_sequences">Timer Sequences</string>
+    <string name="timer_sequences_short">Sequences</string>
     <string name="delete_all_sequences">Delete All Sequences</string>
     <string name="delete_all_confirmation">Are you sure you want to delete all timer sequences? This action cannot be undone.</string>
     <string name="delete_all_btn">Delete All</string>
