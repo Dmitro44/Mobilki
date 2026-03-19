@@ -56,13 +56,25 @@ object "unitM : UnitItem" as unitM {
 }
 
 ' Relationships
-df -- vm : "observes and sends input"
-kf -- vm : "sends key presses"
-vm -- conv : "uses"
-vm -- unitKm : "from unit"
-vm -- unitM : "to unit"
-conv -- result : "creates result"
-result -- unitKm : "fromUnit"
-result -- unitM : "toUnit"
+' Fragments use ViewModel through Android's shared ViewModel pattern (Dependency)
+df ..> vm : <<uses>>
+kf ..> vm : <<uses>>
+
+' ViewModel owns converter instances (Composition - lifecycle bound)
+vm *-- conv : converters
+
+' ViewModel references UnitItems from converters (Association - references only)
+vm --> unitKm
+vm --> unitM
+
+' ViewModel creates and references ConversionResult (Association)
+vm --> result
+
+' Converter creates UnitItem instances it owns (Composition)
+conv *-- unitKm : units
+
+' ConversionResult references UnitItems (Association - immutable references)
+result --> unitKm
+result --> unitM
 
 @enduml
