@@ -9,4 +9,7 @@ local.*
 .DS_Store
 *.swp
 *~
-
+/captures
+.externalNativeBuild
+.cxx
+local.properties

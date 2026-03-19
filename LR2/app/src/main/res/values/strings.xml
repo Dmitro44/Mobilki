@@ -1,0 +1,78 @@
+<resources>
+    <string name="app_name">Timer</string>
+
+    <!-- General -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="skip">Skip</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="back">Back</string>
+    <string name="settings">Settings</string>
+
+    <!-- Main Screen -->
+    <string name="timer_sequences">Timer Sequences</string>
+    <string name="delete_all_sequences">Delete All Sequences</string>
+    <string name="delete_all_confirmation">Are you sure you want to delete all timer sequences? This action cannot be undone.</string>
+    <string name="delete_all_btn">Delete All</string>
+    <string name="delete_sequence">Delete Sequence</string>
+    <string name="delete_sequence_confirmation">Are you sure you want to delete \"%1$s\"? This action cannot be undone.</string>
+    <string name="no_sequences_yet">No timer sequences yet</string>
+    <string name="tap_add_first">Tap the + button to create your first timer</string>
+    <string name="phases_count">%1$d phases</string>
+
+    <!-- Edit Screen -->
+    <string name="create_sequence">Create Sequence</string>
+    <string name="edit_sequence">Edit Sequence</string>
+    <string name="sequence_name">Sequence Name</string>
+    <string name="color">Color</string>
+    <string name="phases">Phases (%1$d)</string>
+    <string name="add_phase">Add Phase</string>
+    <string name="phase_num">Phase %1$d</string>
+    <string name="type">Type</string>
+    <string name="duration_sec">Duration (sec)</string>
+    <string name="repetitions">Repetitions</string>
+    <string name="total_phase_duration">Total: %1$d seconds</string>
+    <string name="delete_phase">Delete Phase</string>
+    <string name="delete_phase_confirmation">Are you sure you want to delete this phase?</string>
+
+    <!-- Timer Screen -->
+    <string name="phase_label">Phase</string>
+    <string name="rep_label">Rep</string>
+    <string name="overall_progress">Overall Progress</string>
+    <string name="stop_timer">Stop Timer</string>
+    <string name="state_ready">Ready</string>
+    <string name="state_running">Running</string>
+    <string name="state_paused">Paused</string>
+    <string name="state_completed">Completed!</string>
+
+    <!-- Settings Screen -->
+    <string name="appearance">Appearance</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="dark_mode_enabled">Dark mode enabled</string>
+    <string name="light_mode_enabled">Light mode enabled</string>
+    <string name="font_size">Font Size</string>
+    <string name="language">Language</string>
+    <string name="reset_to_defaults">Reset to Defaults</string>
+    <string name="reset_settings">Reset Settings</string>
+    <string name="reset_confirmation">Are you sure you want to reset all settings to their default values?</string>
+    <string name="reset">Reset</string>
+    <string name="font_size_small">Small</string>
+    <string name="font_size_medium">Medium</string>
+    <string name="font_size_large">Large</string>
+    <string name="font_size_extra_large">Extra Large</string>
+    <string name="font_scale_label">%1$d%% scale</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Timer Service</string>
+    <string name="notification_channel_description">Shows timer countdown and controls</string>
+    <string name="timer_ready">Timer Ready</string>
+    <string name="timer_completed">Timer Completed</string>
+    <string name="ready_to_start">Ready to start</string>
+    <string name="all_phases_completed">All phases completed!</string>
+</resources>

@@ -1,0 +1,78 @@
+<resources>
+    <string name="app_name">Таймер</string>
+
+    <!-- General -->
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Изменить</string>
+    <string name="start">Начать</string>
+    <string name="stop">Стоп</string>
+    <string name="pause">Пауза</string>
+    <string name="resume">Продолжить</string>
+    <string name="skip">Пропустить</string>
+    <string name="dismiss">Закрыть</string>
+    <string name="back">Назад</string>
+    <string name="settings">Настройки</string>
+
+    <!-- Main Screen -->
+    <string name="timer_sequences">Последовательности</string>
+    <string name="delete_all_sequences">Удалить все</string>
+    <string name="delete_all_confirmation">Вы уверены, что хотите удалить все последовательности? Это действие нельзя отменить.</string>
+    <string name="delete_all_btn">Удалить все</string>
+    <string name="delete_sequence">Удалить последовательность</string>
+    <string name="delete_sequence_confirmation">Вы уверены, что хотите удалить \"%1$s\"? Это действие нельзя отменить.</string>
+    <string name="no_sequences_yet">Нет последовательностей</string>
+    <string name="tap_add_first">Нажмите +, чтобы создать первый таймер</string>
+    <string name="phases_count">Фаз: %1$d</string>
+
+    <!-- Edit Screen -->
+    <string name="create_sequence">Создать</string>
+    <string name="edit_sequence">Редактировать</string>
+    <string name="sequence_name">Название</string>
+    <string name="color">Цвет</string>
+    <string name="phases">Фазы (%1$d)</string>
+    <string name="add_phase">Добавить фазу</string>
+    <string name="phase_num">Фаза %1$d</string>
+    <string name="type">Тип</string>
+    <string name="duration_sec">Длительность (сек)</string>
+    <string name="repetitions">Повторы</string>
+    <string name="total_phase_duration">Всего: %1$d сек</string>
+    <string name="delete_phase">Удалить фазу</string>
+    <string name="delete_phase_confirmation">Вы уверены, что хотите удалить эту фазу?</string>
+
+    <!-- Timer Screen -->
+    <string name="phase_label">Фаза</string>
+    <string name="rep_label">Повтор</string>
+    <string name="overall_progress">Общий прогресс</string>
+    <string name="stop_timer">Остановить таймер</string>
+    <string name="state_ready">Готов</string>
+    <string name="state_running">Запущен</string>
+    <string name="state_paused">Пауза</string>
+    <string name="state_completed">Завершено!</string>
+
+    <!-- Settings Screen -->
+    <string name="appearance">Внешний вид</string>
+    <string name="dark_theme">Тёмная тема</string>
+    <string name="dark_mode_enabled">Тёмная тема включена</string>
+    <string name="light_mode_enabled">Светлая тема включена</string>
+    <string name="font_size">Размер шрифта</string>
+    <string name="language">Язык</string>
+    <string name="reset_to_defaults">Сбросить настройки</string>
+    <string name="reset_settings">Сброс</string>
+    <string name="reset_confirmation">Вы уверены, что хотите сбросить все настройки?</string>
+    <string name="reset">Сброс</string>
+    <string name="font_size_small">Маленький</string>
+    <string name="font_size_medium">Средний</string>
+    <string name="font_size_large">Большой</string>
+    <string name="font_size_extra_large">Очень большой</string>
+    <string name="font_scale_label">Масштаб %1$d%%</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Служба таймера</string>
+    <string name="notification_channel_description">Показывает отсчёт времени и элементы управления</string>
+    <string name="timer_ready">Таймер готов</string>
+    <string name="timer_completed">Таймер завершен</string>
+    <string name="ready_to_start">Готов к запуску</string>
+    <string name="all_phases_completed">Все фазы завершены!</string>
+</resources>
