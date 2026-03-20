@@ -1,45 +1,33 @@
 @startuml
 left to right direction
-skinparam packageStyle rectangle
-
-actor "Пользователь" as User
-
-rectangle "Приложение Таймер" {
-  usecase "Просмотреть список таймеров" as UC1
-  usecase "Создать новый таймер" as UC2
-  usecase "Редактировать таймер" as UC3
-  usecase "Удалить таймер" as UC4
-  usecase "Запустить таймер" as UC5
-  usecase "Приостановить таймер" as UC6
-  usecase "Остановить таймер" as UC7
-  usecase "Перейти к следующей фазе" as UC8
-  usecase "Перейти к предыдущей фазе" as UC9
-  usecase "Изменить тему оформления" as UC10
-  usecase "Изменить размер шрифта" as UC11
-  usecase "Изменить язык интерфейса" as UC12
-  usecase "Просмотреть настройки" as UC13
-  usecase "Сбросить настройки" as UC14
-  usecase "Получать уведомления" as UC15
+actor "Пользователь" as user
+package "Приложение Таймер" {
+  usecase "Просмотр списка последовательностей" as UC_Read
+  usecase "Создание и редактирование" as UC_Edit
+  usecase "Удаление последовательности" as UC_Delete
+  usecase "Запуск таймера" as UC_Play
+  usecase "Управление таймером (в приложении)" as UC_Timer
+  usecase "Настройка темы, шрифта и языка" as UC_Settings
+  usecase "Очистка всех данных" as UC_Clear
+  
+  usecase "Фоновый отсчет времени" as UC_Service
+  usecase "Мониторинг через уведомление" as UC_Monitor
+  usecase "Управление через уведомление" as UC_NotifyControl
+  usecase "Подтверждение удаления" as UC_Confirm
 }
-
-User --> UC1
-User --> UC2
-User --> UC3
-User --> UC4
-User --> UC5
-User --> UC6
-User --> UC7
-User --> UC8
-User --> UC9
-User --> UC10
-User --> UC11
-User --> UC12
-User --> UC13
-User --> UC14
-
-UC5 ..> UC15 : <<include>>
-UC6 ..> UC15 : <<include>>
-
-UC2 ..> UC3 : <<extend>>
-
+user --> UC_Read
+user --> UC_Edit
+user --> UC_Delete
+user --> UC_Play
+user --> UC_Timer
+user --> UC_Settings
+user --> UC_Clear
+user --> UC_Monitor
+user --> UC_NotifyControl
+UC_Play ..> UC_Service : <<include>>
+UC_Service ..> UC_Monitor : <<include>>
+' Управление из уведомления расширяет базовую функцию управления
+UC_NotifyControl ..> UC_Timer : <<extend>>
+' Подтверждение расширяет процесс удаления
+UC_Confirm ..> UC_Delete : <<extend>>
 @enduml
