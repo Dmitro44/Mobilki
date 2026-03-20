@@ -42,7 +42,6 @@ open class DataFragmentBase : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // Disable system keyboard for EditTexts
         binding.etInput.showSoftInputOnFocus = false
         
         setupClickListeners()
