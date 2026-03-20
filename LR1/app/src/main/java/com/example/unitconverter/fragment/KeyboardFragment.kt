@@ -10,10 +10,6 @@ import androidx.fragment.app.activityViewModels
 import com.example.unitconverter.databinding.FragmentKeyboardBinding
 import com.example.unitconverter.viewmodel.ConverterViewModel
 
-/**
- * Fragment containing numeric keyboard for input.
- * Uses shared ViewModel from Activity.
- */
 class KeyboardFragment : Fragment() {
 
     private var _binding: FragmentKeyboardBinding? = null

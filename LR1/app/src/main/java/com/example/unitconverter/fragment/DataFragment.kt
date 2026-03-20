@@ -20,11 +20,6 @@ import com.example.unitconverter.R
 import com.example.unitconverter.databinding.FragmentDataBinding
 import com.example.unitconverter.viewmodel.ConverterViewModel
 
-/**
- * Base Fragment displaying conversion data - input value, result, and unit selection.
- * Uses shared ViewModel from Activity.
- * This is the base class that can be extended for flavor-specific implementations.
- */
 open class DataFragmentBase : Fragment() {
 
     private var _binding: FragmentDataBinding? = null
@@ -59,9 +54,6 @@ open class DataFragmentBase : Fragment() {
         updateActiveFieldHighlighting(viewModel.activeField.value ?: ConverterViewModel.ActiveField.INPUT)
     }
 
-    /**
-     * Updates the visual highlighting based on the active field
-     */
     private fun updateActiveFieldHighlighting(field: ConverterViewModel.ActiveField) {
         val activeDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.border_active)
         val defaultDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.border_default)
@@ -183,9 +175,6 @@ open class DataFragmentBase : Fragment() {
         }
     }
 
-    /**
-     * Sets up TextWatchers for input and output EditTexts to handle paste and direct text input.
-     */
     private fun setupTextWatchers() {
         // TextWatcher for input field
         binding.etInput.addTextChangedListener(object : TextWatcher {
@@ -204,10 +193,6 @@ open class DataFragmentBase : Fragment() {
                 viewModel.setInputValueString(text)
             }
         })
-        
-        // TextWatcher for output field
-        // Read-only output field doesn't need TextWatcher since it won't receive input
-        // and we disabled focus and touch events
     }
 
     private fun setupObservers() {
@@ -266,8 +251,6 @@ open class DataFragmentBase : Fragment() {
             val displayValue = value.ifEmpty { "" }
             if (binding.etOutput.text.toString() != displayValue) {
                 binding.etOutput.setText(displayValue)
-                // Removed setSelection here because the output is read-only
-                // and calling it can sometimes force the cursor to be visible
             }
             isUpdatingFromViewModel = false
         }
@@ -277,10 +260,6 @@ open class DataFragmentBase : Fragment() {
             if (viewModel.activeField.value == ConverterViewModel.ActiveField.INPUT) {
                 isUpdatingFromViewModel = true
                 val outputText = if (result != null) {
-                    // Delegate all formatting to the ViewModel's outputValue LiveData so
-                    // that the fragment never applies its own (lower-precision) formatter.
-                    // Reading result.outputValue here with "%.6f" would collapse values like
-                    // 1e-11 to "0", which corrupts _outputValue via the TextWatcher.
                     viewModel.outputValue.value ?: ""
                 } else {
                     ""

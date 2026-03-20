@@ -4,10 +4,6 @@ import com.example.unitconverter.model.UnitItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-/**
- * Converter for currencies with static (mock) exchange rates.
- * No network calls - uses hardcoded rates for demonstration.
- */
 class CurrencyConverter : Converter {
     
     companion object {

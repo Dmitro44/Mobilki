@@ -389,7 +389,6 @@ class ConverterViewModel : ViewModel() {
             return
         }
 
-        // Input validation: limit length to prevent performance issues
         if (input.length > 500) {
             _error.value = "Input too long"
             return

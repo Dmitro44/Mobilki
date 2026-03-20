@@ -4,9 +4,6 @@ import com.example.unitconverter.model.UnitItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-/**
- * Converter for distance/length units
- */
 class DistanceConverter : Converter {
     
     companion object {

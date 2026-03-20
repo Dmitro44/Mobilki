@@ -10,11 +10,6 @@ import android.widget.Button
 import android.widget.Toast
 import com.example.unitconverter.R
 
-/**
- * Premium version of DataFragment with additional features:
- * - Swap button to swap from/to units
- * - Copy buttons to copy input/output values to clipboard
- */
 class DataFragment : DataFragmentBase() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

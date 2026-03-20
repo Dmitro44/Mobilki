@@ -4,15 +4,11 @@ import com.example.unitconverter.model.UnitItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-/**
- * Converter for weight/mass units
- */
 class WeightConverter : Converter {
     
     companion object {
         const val CATEGORY_ID = "weight"
         
-        // Conversion factors to grams (base unit)
         private val TO_GRAMS = mapOf(
             "g" to BigDecimal("1.0"),
             "kg" to BigDecimal("1000.0"),
