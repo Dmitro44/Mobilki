@@ -9,15 +9,13 @@ class CurrencyConverter : Converter {
     companion object {
         const val CATEGORY_ID = "currency"
         
-        // Static exchange rates to USD (base currency)
-        // These are mock rates for demonstration purposes
         private val TO_USD = mapOf(
             "USD" to BigDecimal("1.0"),
-            "EUR" to BigDecimal("1.08"),      // 1 EUR = 1.08 USD
-            "GBP" to BigDecimal("1.27"),      // 1 GBP = 1.27 USD
-            "RUB" to BigDecimal("0.011"),     // 1 RUB = 0.011 USD
-            "UAH" to BigDecimal("0.027"),     // 1 UAH = 0.027 USD
-            "BYN" to BigDecimal("0.31")       // 1 BYN = 0.31 USD
+            "EUR" to BigDecimal("1.148"),      // 1 EUR = 1.148 USD
+            "GBP" to BigDecimal("1.329"),      // 1 GBP = 1.329 USD
+            "RUB" to BigDecimal("0.0119"),     // 1 RUB = 0.0119 USD
+            "UAH" to BigDecimal("0.0226"),     // 1 UAH = 0.0226 USD
+            "BYN" to BigDecimal("0.3313")       // 1 BYN = 0.3313 USD
         )
     }
     

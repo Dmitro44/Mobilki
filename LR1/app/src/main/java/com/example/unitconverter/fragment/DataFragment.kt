@@ -82,7 +82,6 @@ open class DataFragmentBase : Fragment() {
             override fun onDestroyActionMode(mode: ActionMode?) {}
         }
 
-        // Set active field when clicking on input EditText
         binding.etInput.setOnClickListener {
             viewModel.setActiveField(ConverterViewModel.ActiveField.INPUT)
         }
@@ -97,9 +96,8 @@ open class DataFragmentBase : Fragment() {
             binding.etInput.customInsertionActionModeCallback = disableActionMode
         }
         
-        // Disable context menu and selection on the read-only output field
         binding.etOutput.setOnLongClickListener { true }
-        binding.etOutput.setOnClickListener { } // Consume clicks so they don't trigger anything
+        binding.etOutput.setOnClickListener { }
         
         // Allow horizontal scrolling but block focus/editing
         binding.etOutput.setOnTouchListener { v, event ->
