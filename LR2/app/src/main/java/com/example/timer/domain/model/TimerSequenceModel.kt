@@ -2,10 +2,6 @@ package com.example.timer.domain.model
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * Domain model for a timer sequence
- * Decouples business logic from database entities
- */
 data class TimerSequenceModel(
     val id: Long = 0,
     val name: String,
@@ -14,15 +10,9 @@ data class TimerSequenceModel(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
-    /**
-     * Calculate total duration of all phases including repetitions
-     */
     val totalDurationSeconds: Int
         get() = phases.sumOf { it.totalDurationSeconds }
     
-    /**
-     * Get a formatted duration string (HH:MM:SS or MM:SS)
-     */
     fun getFormattedDuration(): String {
         val hours = totalDurationSeconds / 3600
         val minutes = (totalDurationSeconds % 3600) / 60
@@ -35,15 +25,9 @@ data class TimerSequenceModel(
         }
     }
     
-    /**
-     * Validate sequence data
-     */
     fun isValid(): Boolean {
         return name.isNotBlank() && phases.all { it.isValid() }
     }
     
-    /**
-     * Check if sequence has at least one phase
-     */
     fun hasPhases(): Boolean = phases.isNotEmpty()
 }

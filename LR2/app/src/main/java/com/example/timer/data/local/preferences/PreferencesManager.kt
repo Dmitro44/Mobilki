@@ -11,16 +11,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Extension property to create DataStore instance
- */
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
     name = "user_preferences"
 )
 
-/**
- * Manager class for handling user preferences using DataStore
- */
 class PreferencesManager private constructor(private val context: Context) {
     
     private val dataStore: DataStore<Preferences> = context.dataStore
@@ -33,10 +27,6 @@ class PreferencesManager private constructor(private val context: Context) {
         @Volatile
         private var INSTANCE: PreferencesManager? = null
         
-        /**
-         * Get singleton PreferencesManager instance
-         * Uses double-check locking pattern for thread safety
-         */
         fun getInstance(context: Context): PreferencesManager {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: PreferencesManager(context.applicationContext).also { INSTANCE = it }
@@ -44,9 +34,6 @@ class PreferencesManager private constructor(private val context: Context) {
         }
     }
     
-    /**
-     * Flow of user preferences that emits whenever preferences change
-     */
     val userPreferencesFlow: Flow<UserPreferences> = dataStore.data.map { preferences ->
         UserPreferences(
             isDarkTheme = preferences[KEY_DARK_THEME] ?: false,
@@ -55,36 +42,24 @@ class PreferencesManager private constructor(private val context: Context) {
         )
     }
     
-    /**
-     * Update dark theme preference
-     */
     suspend fun setDarkTheme(isDark: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_DARK_THEME] = isDark
         }
     }
     
-    /**
-     * Update font size preference
-     */
     suspend fun setFontSize(fontSize: FontSize) {
         dataStore.edit { preferences ->
             preferences[KEY_FONT_SIZE] = fontSize.ordinal
         }
     }
     
-    /**
-     * Update language preference
-     */
     suspend fun setLanguage(language: Language) {
         dataStore.edit { preferences ->
             preferences[KEY_LANGUAGE] = language.code
         }
     }
     
-    /**
-     * Clear all preferences (reset to defaults)
-     */
     suspend fun clearPreferences() {
         dataStore.edit { preferences ->
             preferences.clear()

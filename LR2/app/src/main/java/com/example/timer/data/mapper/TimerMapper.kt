@@ -9,9 +9,6 @@ import com.example.timer.domain.model.PhaseType
 import com.example.timer.domain.model.TimerPhaseModel
 import com.example.timer.domain.model.TimerSequenceModel
 
-/**
- * Extension functions to map between database entities and domain models
- */
 
 // TimerSequence Entity <-> Domain Model
 

@@ -27,18 +27,6 @@ import com.example.timer.data.local.preferences.FontSize
 import com.example.timer.data.local.preferences.Language
 import com.example.timer.ui.viewmodel.SettingsViewModel
 
-/**
- * Settings screen for user preferences
- * 
- * Features:
- * - Dark theme toggle
- * - Font size selection (Small, Medium, Large, Extra Large)
- * - Language selection (English, Ukrainian)
- * - Reset to defaults button
- * 
- * @param viewModel ViewModel managing settings state
- * @param onNavigateBack Callback when user navigates back
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -223,9 +211,6 @@ fun SettingsScreen(
     }
 }
 
-/**
- * Section header with icon
- */
 @Composable
 private fun SettingsSection(
     title: String,
@@ -258,9 +243,6 @@ private fun SettingsSection(
     }
 }
 
-/**
- * Dark theme toggle switch
- */
 @Composable
 private fun ThemeToggle(
     isDarkTheme: Boolean,
@@ -303,9 +285,6 @@ private fun ThemeToggle(
     }
 }
 
-/**
- * Font size radio button selector
- */
 @Composable
 private fun FontSizeSelector(
     selectedFontSize: FontSize,
@@ -370,9 +349,6 @@ private fun FontSizeSelector(
     }
 }
 
-/**
- * Language radio button selector
- */
 @Composable
 private fun LanguageSelector(
     selectedLanguage: Language,

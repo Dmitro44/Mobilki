@@ -8,13 +8,6 @@ import androidx.room.PrimaryKey
 
 /**
  * Room entity representing a phase within a timer sequence
- * 
- * @property id Unique identifier, auto-generated
- * @property sequenceId Foreign key to parent TimerSequence
- * @property phaseType Type of phase (WARMUP, WORK, REST, COOLDOWN)
- * @property durationSeconds Duration of this phase in seconds
- * @property repetitions Number of times to repeat this phase
- * @property order Display order within the sequence
  */
 @Entity(
     tableName = "timer_phases",

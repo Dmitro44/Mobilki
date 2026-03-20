@@ -7,10 +7,6 @@ import com.example.timer.data.local.preferences.UserPreferences
 import com.example.timer.domain.repository.PreferencesRepository
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Implementation of PreferencesRepository
- * Delegates to PreferencesManager for DataStore operations
- */
 class PreferencesRepositoryImpl(
     private val preferencesManager: PreferencesManager
 ) : PreferencesRepository {

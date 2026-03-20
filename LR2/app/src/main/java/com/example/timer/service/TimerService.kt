@@ -28,22 +28,6 @@ import kotlinx.coroutines.launch
 
 /**
  * Foreground service that manages timer countdown and playback
- * 
- * Responsibilities:
- * - Load and execute timer sequences
- * - Count down phases with second precision
- * - Handle phase transitions and repetitions
- * - Play sound feedback on phase completion
- * - Expose state via singleton StateFlow for UI observation
- * - Show foreground notification with controls
- * 
- * Notification Strategy:
- * - Standard notification (TimerNotificationHelper): Always shown, works on all devices
- * 
- * Lifecycle:
- * - Starts as foreground service when timer begins
- * - Stops foreground when timer is idle or completed
- * - Service stops itself when no longer needed
  */
 class TimerService : Service() {
     

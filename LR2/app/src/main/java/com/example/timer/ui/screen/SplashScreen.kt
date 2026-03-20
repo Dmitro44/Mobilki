@@ -19,17 +19,6 @@ import androidx.compose.ui.res.stringResource
 import com.example.timer.R
 import kotlinx.coroutines.delay
 
-/**
- * Splash screen displayed on app launch
- * 
- * Features:
- * - App logo/icon with animation
- * - App name
- * - Fade-in animation
- * - Auto-navigation to main screen after delay
- * 
- * @param onNavigateToMain Callback to navigate to main screen
- */
 @Composable
 fun SplashScreen(
     onNavigateToMain: () -> Unit,

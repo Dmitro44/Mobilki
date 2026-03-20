@@ -9,12 +9,6 @@ import com.example.timer.data.local.dao.TimerSequenceDao
 import com.example.timer.data.local.entity.TimerPhase
 import com.example.timer.data.local.entity.TimerSequence
 
-/**
- * Room database for the Timer application
- * 
- * Version 1: Initial schema with TimerSequence and TimerPhase entities
- * exportSchema = true enables schema export for migration testing
- */
 @Database(
     entities = [
         TimerSequence::class,
@@ -34,10 +28,6 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
         
-        /**
-         * Get singleton database instance
-         * Uses double-check locking pattern for thread safety
-         */
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }

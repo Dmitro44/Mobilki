@@ -6,12 +6,6 @@ import androidx.room.PrimaryKey
 
 /**
  * Room entity representing a timer sequence
- * 
- * @property id Unique identifier, auto-generated
- * @property name User-defined name for the sequence
- * @property color Visual identifier color
- * @property createdAt Timestamp of creation
- * @property updatedAt Timestamp of last modification
  */
 @Entity(tableName = "timer_sequences")
 data class TimerSequence(

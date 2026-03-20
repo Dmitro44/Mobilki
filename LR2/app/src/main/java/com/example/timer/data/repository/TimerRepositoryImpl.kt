@@ -11,10 +11,6 @@ import com.example.timer.domain.repository.TimerRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Implementation of TimerRepository
- * Handles data operations for timer sequences
- */
 class TimerRepositoryImpl(
     private val sequenceDao: TimerSequenceDao,
     private val phaseDao: TimerPhaseDao

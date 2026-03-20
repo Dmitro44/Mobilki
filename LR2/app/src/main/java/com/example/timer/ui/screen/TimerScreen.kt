@@ -32,19 +32,6 @@ import com.example.timer.ui.viewmodel.TimerViewModel
 
 /**
  * Timer screen displaying countdown and controls
- * 
- * Features:
- * - Large countdown timer display
- * - Current phase type and name
- * - Progress indicators (phase and sequence)
- * - Repetition and phase counters
- * - Play/Pause, Stop, Skip controls
- * - Color-coded phase indicators
- * - Animated progress rings
- * 
- * @param viewModel ViewModel providing timer state
- * @param sequenceId ID of the sequence to run (used for initial start)
- * @param onNavigateBack Callback when user stops timer or it completes
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

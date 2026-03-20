@@ -13,17 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel for creating and editing timer sequences
- * 
- * Responsibilities:
- * - Manage sequence editing state (name, color, phases)
- * - Load existing sequence for editing
- * - Validate and save sequence data
- * - Handle phase CRUD operations
- * 
- * @param repository Repository for sequence data operations
- */
 class EditViewModel(
     private val repository: TimerRepository
 ) : ViewModel() {
@@ -35,10 +24,6 @@ class EditViewModel(
     // Track if we're in edit mode (vs create mode)
     private var editingSequenceId: Long? = null
     
-    /**
-     * Initialize ViewModel with an existing sequence for editing
-     * @param sequenceId ID of the sequence to load, or null for create mode
-     */
     fun loadSequence(sequenceId: Long?) {
         if (sequenceId == null || sequenceId == 0L) {
             // Create mode - reset to defaults
@@ -65,23 +50,14 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Update sequence name
-     */
     fun updateName(name: String) {
         _uiState.update { it.copy(name = name) }
     }
     
-    /**
-     * Update selected color
-     */
     fun updateColor(color: Color) {
         _uiState.update { it.copy(selectedColor = color) }
     }
     
-    /**
-     * Add a new phase to the sequence
-     */
     fun addPhase(
         phaseType: PhaseType = PhaseType.WORK,
         durationSeconds: Int = 60,
@@ -100,9 +76,6 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Update an existing phase
-     */
     fun updatePhase(index: Int, updatedPhase: TimerPhaseModel) {
         _uiState.update { currentState ->
             val phases = currentState.phases.toMutableList()
@@ -113,9 +86,6 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Remove a phase from the sequence
-     */
     fun removePhase(index: Int) {
         _uiState.update { currentState ->
             val phases = currentState.phases.toMutableList()
@@ -130,9 +100,6 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Move a phase up in the list
-     */
     fun movePhaseUp(index: Int) {
         if (index <= 0) return
         _uiState.update { currentState ->
@@ -144,9 +111,6 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Move a phase down in the list
-     */
     fun movePhaseDown(index: Int) {
         _uiState.update { currentState ->
             if (index >= currentState.phases.size - 1) return
@@ -158,10 +122,6 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Validate and save the sequence
-     * @return true if save was successful
-     */
     suspend fun saveSequence(): Boolean {
         val currentState = _uiState.value
         
@@ -210,17 +170,11 @@ class EditViewModel(
         }
     }
     
-    /**
-     * Clear any error message
-     */
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
 }
 
-/**
- * UI state for the edit screen
- */
 data class EditUiState(
     val name: String = "",
     val selectedColor: Color = Color(0xFF6200EE), // Default purple

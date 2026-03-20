@@ -1,8 +1,5 @@
 package com.example.timer.domain.model
 
-/**
- * Enum representing the type of phase in a timer sequence
- */
 enum class PhaseType {
     WARMUP,
     WORK,
@@ -17,10 +14,6 @@ enum class PhaseType {
     }
 }
 
-/**
- * Domain model for a timer phase
- * Decouples business logic from database entities
- */
 data class TimerPhaseModel(
     val id: Long = 0,
     val sequenceId: Long,
@@ -29,15 +22,9 @@ data class TimerPhaseModel(
     val repetitions: Int = 1,
     val order: Int
 ) {
-    /**
-     * Calculate total duration including all repetitions
-     */
     val totalDurationSeconds: Int
         get() = durationSeconds * repetitions
     
-    /**
-     * Validate phase data
-     */
     fun isValid(): Boolean {
         return durationSeconds > 0 && repetitions > 0 && order >= 0
     }

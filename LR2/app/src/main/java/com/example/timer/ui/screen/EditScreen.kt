@@ -28,20 +28,6 @@ import com.example.timer.domain.model.TimerPhaseModel
 import com.example.timer.ui.viewmodel.EditViewModel
 import kotlinx.coroutines.launch
 
-/**
- * Screen for creating and editing timer sequences
- * 
- * Features:
- * - Text field for sequence name
- * - Color picker grid
- * - Phase list with add/remove/reorder
- * - Duration and repetition inputs for each phase
- * - Save/Cancel actions
- * 
- * @param viewModel ViewModel managing edit state
- * @param sequenceId ID of sequence to edit (null for create mode)
- * @param onNavigateBack Callback when user cancels or successfully saves
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditScreen(
@@ -210,9 +196,6 @@ fun EditScreen(
     }
 }
 
-/**
- * Name input field
- */
 @Composable
 private fun NameInput(
     name: String,
@@ -235,9 +218,6 @@ private fun NameInput(
     )
 }
 
-/**
- * Color picker grid
- */
 @Composable
 private fun ColorPicker(
     selectedColor: Color,
@@ -291,9 +271,6 @@ private fun ColorPicker(
     }
 }
 
-/**
- * Individual color circle
- */
 @Composable
 private fun ColorCircle(
     color: Color,
@@ -327,9 +304,6 @@ private fun ColorCircle(
     }
 }
 
-/**
- * Card for editing a phase
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PhaseCard(

@@ -28,9 +28,6 @@ import com.example.timer.R
 import com.example.timer.domain.model.TimerSequenceModel
 import com.example.timer.ui.viewmodel.MainViewModel
 
-/**
- * Main screen displaying list of timer sequences
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -108,9 +105,6 @@ fun MainScreen(
     }
 }
 
-/**
- * List of timer sequences
- */
 @Composable
 private fun SequenceList(
     sequences: List<TimerSequenceModel>,
@@ -138,9 +132,6 @@ private fun SequenceList(
     }
 }
 
-/**
- * Card displaying a single timer sequence
- */
 @Composable
 private fun SequenceCard(
     sequence: TimerSequenceModel,
@@ -277,9 +268,6 @@ private fun SequenceCard(
     }
 }
 
-/**
- * Empty state when no sequences exist
- */
 @Composable
 private fun EmptyState(
     modifier: Modifier = Modifier

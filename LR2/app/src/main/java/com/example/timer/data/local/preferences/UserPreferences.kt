@@ -1,17 +1,11 @@
 package com.example.timer.data.local.preferences
 
-/**
- * Data class representing user preferences
- */
 data class UserPreferences(
     val isDarkTheme: Boolean = false,
     val fontSize: FontSize = FontSize.MEDIUM,
     val language: Language = Language.ENGLISH
 )
 
-/**
- * Enum for font size options
- */
 enum class FontSize(val scale: Float) {
     SMALL(0.85f),
     MEDIUM(1.0f),
@@ -25,9 +19,6 @@ enum class FontSize(val scale: Float) {
     }
 }
 
-/**
- * Enum for language options
- */
 enum class Language(val code: String, val displayName: String) {
     ENGLISH("en", "English"),
     RUSSIAN("ru", "Русский");
