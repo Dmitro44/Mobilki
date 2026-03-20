@@ -79,7 +79,7 @@ fun SplashScreen(
             )
             
             Text(
-                text = "Interval Training",
+                text = stringResource(R.string.splash_text),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
             )
