@@ -56,7 +56,7 @@ fun SplashScreen(
     
     // Navigate to main screen after delay
     LaunchedEffect(Unit) {
-        delay(2000) // 2 seconds splash duration
+        delay(1000) // Reduced to 1 second splash duration
         onNavigateToMain()
     }
     

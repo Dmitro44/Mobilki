@@ -446,11 +446,15 @@ private fun PhaseCard(
             ) {
                 // Duration input
                 OutlinedTextField(
-                    value = phase.durationSeconds.toString(),
+                    value = if (phase.durationSeconds == 0) "" else phase.durationSeconds.toString(),
                     onValueChange = { value ->
-                        value.toIntOrNull()?.let { seconds ->
-                            if (seconds > 0) {
-                                onUpdate(phase.copy(durationSeconds = seconds))
+                        if (value.isEmpty()) {
+                            onUpdate(phase.copy(durationSeconds = 0))
+                        } else {
+                            value.toIntOrNull()?.let { seconds ->
+                                if (seconds >= 0) {
+                                    onUpdate(phase.copy(durationSeconds = seconds))
+                                }
                             }
                         }
                     },
@@ -462,11 +466,15 @@ private fun PhaseCard(
                 
                 // Repetitions input
                 OutlinedTextField(
-                    value = phase.repetitions.toString(),
+                    value = if (phase.repetitions == 0) "" else phase.repetitions.toString(),
                     onValueChange = { value ->
-                        value.toIntOrNull()?.let { reps ->
-                            if (reps > 0) {
-                                onUpdate(phase.copy(repetitions = reps))
+                        if (value.isEmpty()) {
+                            onUpdate(phase.copy(repetitions = 0))
+                        } else {
+                            value.toIntOrNull()?.let { reps ->
+                                if (reps >= 0) {
+                                    onUpdate(phase.copy(repetitions = reps))
+                                }
                             }
                         }
                     },

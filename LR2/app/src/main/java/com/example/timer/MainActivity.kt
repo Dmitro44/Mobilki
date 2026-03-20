@@ -91,10 +91,12 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(intent) {
                     val sequenceId = intent.getLongExtra("EXTRA_SEQUENCE_ID", -1L)
                     if (sequenceId != -1L) {
-                        navController.navigate(Routes.Timer.createRoute(sequenceId)) {
-                            // Clear backstack to avoid multiple instances of TimerScreen
-                            popUpTo(Routes.Main.route) { inclusive = false }
+                        // First, clear everything and go to Main
+                        navController.navigate(Routes.Main.route) {
+                            popUpTo(Routes.Splash.route) { inclusive = true }
                         }
+                        // Then navigate to Timer on top of Main
+                        navController.navigate(Routes.Timer.createRoute(sequenceId))
                     }
                 }
                 
