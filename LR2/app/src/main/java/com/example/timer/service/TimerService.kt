@@ -4,11 +4,13 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.media.ToneGenerator
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.util.Log
+import com.example.timer.R
 import com.example.timer.data.local.database.AppDatabase
 import com.example.timer.data.repository.TimerRepositoryImpl
 import com.example.timer.domain.model.PhaseType
@@ -60,13 +62,13 @@ class TimerService : Service() {
     private var currentPhaseIndex = 0
     private var currentRepetitionIndex = 0
     private var currentPhaseRemainingSeconds = 0
-    private var totalElapsedSeconds = 0
     
     // CountDownTimer for ticking
     private var countDownTimer: CountDownTimer? = null
     
     // Sound feedback
     private var toneGenerator: ToneGenerator? = null
+    private var mediaPlayer: MediaPlayer? = null
     
     companion object {
         private const val TAG = "TimerService"
@@ -131,6 +133,8 @@ class TimerService : Service() {
         stopTimer()
         toneGenerator?.release()
         toneGenerator = null
+        mediaPlayer?.release()
+        mediaPlayer = null
         serviceScope.cancel()
     }
     
@@ -170,10 +174,6 @@ class TimerService : Service() {
                 // Reset state
                 currentPhaseIndex = 0
                 currentRepetitionIndex = 0
-                totalElapsedSeconds = 0
-                
-                // Calculate total duration
-                val totalDuration = currentPhasesList.sumOf { it.totalDurationSeconds }
                 
                 // Initialize first phase
                 val firstPhase = currentPhasesList[0]
@@ -189,10 +189,9 @@ class TimerService : Service() {
                     totalRepetitions = firstPhase.repetitions,
                     currentPhaseType = firstPhase.phaseType,
                     totalPhases = currentPhasesList.size,
+                    allPhases = currentPhasesList,
                     remainingSeconds = currentPhaseRemainingSeconds,
-                    phaseDurationSeconds = firstPhase.durationSeconds,
-                    totalSequenceDuration = totalDuration,
-                    elapsedSequenceTime = totalElapsedSeconds
+                    phaseDurationSeconds = firstPhase.durationSeconds
                 )
                 
                 // Start foreground service
@@ -221,12 +220,10 @@ class TimerService : Service() {
         ) {
             override fun onTick(millisUntilFinished: Long) {
                 currentPhaseRemainingSeconds = (millisUntilFinished / 1000).toInt()
-                totalElapsedSeconds++
                 
                 // Update state with new time
                 updateStateTime(
-                    remainingSeconds = currentPhaseRemainingSeconds,
-                    elapsedSequenceTime = totalElapsedSeconds
+                    remainingSeconds = currentPhaseRemainingSeconds
                 )
             }
             
@@ -266,8 +263,7 @@ class TimerService : Service() {
             updateState(
                 playbackState = PlaybackState.RUNNING,
                 currentRepetitionIndex = currentRepetitionIndex,
-                remainingSeconds = currentPhaseRemainingSeconds,
-                elapsedSequenceTime = totalElapsedSeconds
+                remainingSeconds = currentPhaseRemainingSeconds
             )
             
             // Restart countdown
@@ -289,8 +285,7 @@ class TimerService : Service() {
                     totalRepetitions = nextPhase.repetitions,
                     currentPhaseType = nextPhase.phaseType,
                     remainingSeconds = currentPhaseRemainingSeconds,
-                    phaseDurationSeconds = nextPhase.durationSeconds,
-                    elapsedSequenceTime = totalElapsedSeconds
+                    phaseDurationSeconds = nextPhase.durationSeconds
                 )
                 
                 // Restart countdown
@@ -371,9 +366,7 @@ class TimerService : Service() {
             currentPhaseType = PhaseType.WORK,
             totalPhases = 0,
             remainingSeconds = 0,
-            phaseDurationSeconds = 0,
-            totalSequenceDuration = 0,
-            elapsedSequenceTime = 0
+            phaseDurationSeconds = 0
         )
         
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -489,10 +482,9 @@ class TimerService : Service() {
         totalRepetitions: Int = _timerState.value.totalRepetitions,
         currentPhaseType: PhaseType = _timerState.value.currentPhaseType,
         totalPhases: Int = _timerState.value.totalPhases,
+        allPhases: List<TimerPhaseModel> = _timerState.value.allPhases,
         remainingSeconds: Int = _timerState.value.remainingSeconds,
-        phaseDurationSeconds: Int = _timerState.value.phaseDurationSeconds,
-        totalSequenceDuration: Int = _timerState.value.totalSequenceDuration,
-        elapsedSequenceTime: Int = _timerState.value.elapsedSequenceTime
+        phaseDurationSeconds: Int = _timerState.value.phaseDurationSeconds
     ) {
         val newState = TimerState(
             playbackState = playbackState,
@@ -503,10 +495,9 @@ class TimerService : Service() {
             totalRepetitions = totalRepetitions,
             currentPhaseType = currentPhaseType,
             totalPhases = totalPhases,
+            allPhases = allPhases,
             remainingSeconds = remainingSeconds,
-            phaseDurationSeconds = phaseDurationSeconds,
-            totalSequenceDuration = totalSequenceDuration,
-            elapsedSequenceTime = elapsedSequenceTime
+            phaseDurationSeconds = phaseDurationSeconds
         )
         
         _timerState.value = newState
@@ -521,12 +512,10 @@ class TimerService : Service() {
      * Update only time-related state fields (for efficiency during ticking)
      */
     private fun updateStateTime(
-        remainingSeconds: Int,
-        elapsedSequenceTime: Int
+        remainingSeconds: Int
     ) {
         _timerState.value = _timerState.value.copy(
-            remainingSeconds = remainingSeconds,
-            elapsedSequenceTime = elapsedSequenceTime
+            remainingSeconds = remainingSeconds
         )
         
         // Update standard notification less frequently (every 1 second is fine)
@@ -555,9 +544,26 @@ class TimerService : Service() {
      */
     private fun playBeep() {
         try {
-            toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 200)
+            // Try playing custom sound first
+            if (mediaPlayer == null) {
+                mediaPlayer = MediaPlayer.create(this, R.raw.taco_bell_bong_sfx)
+            }
+            
+            mediaPlayer?.let { player ->
+                if (player.isPlaying) {
+                    player.pause()
+                    player.seekTo(0)
+                }
+                player.start()
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to play beep", e)
+            Log.e(TAG, "Failed to play custom sound", e)
+            // Fallback to basic beep only if custom sound fails
+            try {
+                toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 200)
+            } catch (inner: Exception) {
+                Log.e(TAG, "Fallback beep also failed", inner)
+            }
         }
     }
 }

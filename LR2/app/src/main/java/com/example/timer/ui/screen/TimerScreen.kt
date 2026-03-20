@@ -2,7 +2,11 @@ package com.example.timer.ui.screen
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -120,6 +124,16 @@ fun TimerScreen(
                     .weight(1f)
                     .fillMaxWidth()
             )
+
+            // Queue section: Next phases
+            if (timerState.allPhases.isNotEmpty()) {
+                PhaseQueueSection(
+                    timerState = timerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                )
+            }
             
             // Bottom section: Controls
             ControlsSection(
@@ -289,28 +303,6 @@ private fun TimerDisplaySection(
                     )
                 }
             }
-            
-            // Overall sequence progress
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(horizontal = 32.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.overall_progress),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                LinearProgressIndicator(
-                    progress = { timerState.getSequenceProgress() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            }
         }
     }
 }
@@ -399,6 +391,102 @@ private fun ControlsSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.stop_timer))
+        }
+    }
+}
+
+@Composable
+private fun PhaseQueueSection(
+    timerState: TimerState,
+    modifier: Modifier = Modifier
+) {
+    // Generate a list of all individual steps (phase index + repetition index)
+    val queueItems = remember(timerState.allPhases) {
+        timerState.allPhases.flatMapIndexed { phaseIndex, phase ->
+            (0 until phase.repetitions).map { repIndex ->
+                Triple(phaseIndex, repIndex, phase)
+            }
+        }
+    }
+
+    // Find the current global index in the flattened list
+    val currentGlobalIndex = queueItems.indexOfFirst { 
+        it.first == timerState.currentPhaseIndex && it.second == timerState.currentRepetitionIndex 
+    }
+
+    Column(
+        modifier = modifier.padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.next_phases),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            state = rememberLazyListState(initialFirstVisibleItemIndex = if (currentGlobalIndex > 0) currentGlobalIndex else 0)
+        ) {
+            itemsIndexed(queueItems) { index, (phaseIndex, repIndex, phase) ->
+                val isCurrent = index == currentGlobalIndex
+                val isPast = index < currentGlobalIndex
+                
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isCurrent) {
+                        getPhaseColor(phase.phaseType).copy(alpha = 0.2f)
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                    modifier = Modifier
+                        .width(100.dp)
+                        .then(
+                            if (isCurrent) Modifier.border(
+                                2.dp,
+                                getPhaseColor(phase.phaseType),
+                                RoundedCornerShape(12.dp)
+                            ) else Modifier
+                        ),
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceVariant).copy(
+                        alpha = if (isPast) 0.5f else 1.0f
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(getPhaseColor(phase.phaseType), CircleShape)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = phase.phaseType.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                            maxLines = 1
+                        )
+                        // Show which repetition it is if more than 1
+                        Text(
+                            text = if (phase.repetitions > 1) {
+                                "${repIndex + 1}/${phase.repetitions} • " + 
+                                String.format("%02d:%02d", phase.durationSeconds / 60, phase.durationSeconds % 60)
+                            } else {
+                                String.format("%02d:%02d", phase.durationSeconds / 60, phase.durationSeconds % 60)
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = if (isPast) 0.5f else 1.0f
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 }

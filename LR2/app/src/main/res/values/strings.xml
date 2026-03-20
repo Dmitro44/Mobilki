@@ -45,12 +45,12 @@
     <!-- Timer Screen -->
     <string name="phase_label">Phase</string>
     <string name="rep_label">Rep</string>
-    <string name="overall_progress">Overall Progress</string>
     <string name="stop_timer">Stop Timer</string>
     <string name="state_ready">Ready</string>
     <string name="state_running">Running</string>
     <string name="state_paused">Paused</string>
     <string name="state_completed">Completed!</string>
+    <string name="next_phases">Next Phases</string>
 
     <!-- Settings Screen -->
     <string name="appearance">Appearance</string>

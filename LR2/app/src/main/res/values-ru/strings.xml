@@ -45,12 +45,12 @@
     <!-- Timer Screen -->
     <string name="phase_label">Фаза</string>
     <string name="rep_label">Повтор</string>
-    <string name="overall_progress">Общий прогресс</string>
     <string name="stop_timer">Остановить таймер</string>
     <string name="state_ready">Готов</string>
     <string name="state_running">Запущен</string>
     <string name="state_paused">Пауза</string>
     <string name="state_completed">Завершено!</string>
+    <string name="next_phases">Предстоящие фазы</string>
 
     <!-- Settings Screen -->
     <string name="appearance">Внешний вид</string>

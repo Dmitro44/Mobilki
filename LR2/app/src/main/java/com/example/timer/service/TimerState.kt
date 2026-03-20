@@ -1,6 +1,7 @@
 package com.example.timer.service
 
 import com.example.timer.domain.model.PhaseType
+import com.example.timer.domain.model.TimerPhaseModel
 
 /**
  * Represents the complete state of the timer service
@@ -46,6 +47,11 @@ data class TimerState(
      * Total number of phases in the sequence
      */
     val totalPhases: Int = 0,
+
+    /**
+     * All phases in the current sequence for displaying queue
+     */
+    val allPhases: List<TimerPhaseModel> = emptyList(),
     
     /**
      * Remaining time in the current phase (in seconds)
@@ -55,17 +61,7 @@ data class TimerState(
     /**
      * Total duration of the current phase (in seconds)
      */
-    val phaseDurationSeconds: Int = 0,
-    
-    /**
-     * Total duration of the entire sequence (in seconds)
-     */
-    val totalSequenceDuration: Int = 0,
-    
-    /**
-     * Elapsed time in the entire sequence (in seconds)
-     */
-    val elapsedSequenceTime: Int = 0
+    val phaseDurationSeconds: Int = 0
 ) {
     /**
      * Format remaining time as MM:SS or HH:MM:SS
@@ -89,14 +85,6 @@ data class TimerState(
         if (phaseDurationSeconds <= 0) return 0f
         val elapsed = phaseDurationSeconds - remainingSeconds
         return (elapsed.toFloat() / phaseDurationSeconds.toFloat()).coerceIn(0f, 1f)
-    }
-    
-    /**
-     * Get overall sequence progress percentage
-     */
-    fun getSequenceProgress(): Float {
-        if (totalSequenceDuration <= 0) return 0f
-        return (elapsedSequenceTime.toFloat() / totalSequenceDuration.toFloat()).coerceIn(0f, 1f)
     }
     
     /**
