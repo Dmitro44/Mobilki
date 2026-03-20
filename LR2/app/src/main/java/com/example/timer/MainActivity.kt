@@ -91,6 +91,9 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(intent) {
                     val sequenceId = intent.getLongExtra("EXTRA_SEQUENCE_ID", -1L)
                     if (sequenceId != -1L) {
+                        // Consume the intent extra so it doesn't trigger again on recreation
+                        intent.removeExtra("EXTRA_SEQUENCE_ID")
+                        
                         // First, clear everything and go to Main
                         navController.navigate(Routes.Main.route) {
                             popUpTo(Routes.Splash.route) { inclusive = true }
@@ -113,6 +116,9 @@ class MainActivity : ComponentActivity() {
      * Recreate activity with smooth fade animation
      */
     fun recreateWithAnimation() {
+        // Remove timer extras to prevent auto-restarting timer on language change
+        intent.removeExtra("EXTRA_SEQUENCE_ID")
+        
         finish()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
