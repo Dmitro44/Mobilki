@@ -6,25 +6,30 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.timer.MainActivity
 import com.example.timer.R
+import io.github.d4viddf.hyperisland_kit.HyperAction
+import io.github.d4viddf.hyperisland_kit.HyperIslandNotification
+import io.github.d4viddf.hyperisland_kit.HyperPicture
+import io.github.d4viddf.hyperisland_kit.models.ImageTextInfoLeft
+import io.github.d4viddf.hyperisland_kit.models.ImageTextInfoRight
+import io.github.d4viddf.hyperisland_kit.models.PicInfo
+import io.github.d4viddf.hyperisland_kit.models.TextInfo
+import io.github.d4viddf.hyperisland_kit.models.TimerInfo
+import java.util.Locale.getDefault
 
-/**
- * Helper class for building and managing timer service notifications
- * 
- * Responsibilities:
- * - Create notification channel
- * - Build foreground service notification with timer information
- * - Add dynamic action buttons based on playback state
- * - Update notification content efficiently
- */
 class TimerNotificationHelper(private val context: Context) {
     
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     
+    private val cachedPendingIntents = mutableMapOf<String, PendingIntent>()
+    
     companion object {
+        private const val TAG = "TimerNotificationHelper"
         const val CHANNEL_ID = "timer_service_channel"
         const val CHANNEL_NAME = "Timer Service"
         const val NOTIFICATION_ID = 1001
@@ -40,16 +45,17 @@ class TimerNotificationHelper(private val context: Context) {
         createNotificationChannel()
     }
     
-    /**
-     * Create the notification channel for timer notifications
-     * Only needed on Android O and above
-     */
+    private fun isXiaomiDevice(): Boolean {
+        val manufacturer = Build.MANUFACTURER.lowercase()
+        return manufacturer == "xiaomi" || manufacturer == "poco" || manufacturer == "redmi"
+    }
+    
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_LOW // Low importance to avoid sound/vibration
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Shows timer countdown and controls"
                 setShowBadge(false)
@@ -59,14 +65,84 @@ class TimerNotificationHelper(private val context: Context) {
         }
     }
     
-    /**
-     * Build notification based on current timer state
-     * @param state Current timer state to display
-     * @return Notification ready for foreground service
-     */
     fun buildNotification(state: TimerState): Notification {
+        return if (isXiaomiDevice()) {
+            buildXiaomiNotification(state)
+        } else {
+            buildStandardNotification(state)
+        }
+    }
+    
+    private fun buildXiaomiNotification(state: TimerState): Notification {
+        val timerIcon = HyperPicture("timer_icon", context, R.drawable.ic_launcher_foreground)
+        
+        val hyperBuilder = HyperIslandNotification.Builder(
+            context = context,
+            businessName = "timer_service",
+            ticker = CHANNEL_NAME
+        )
+        
+        hyperBuilder.addPicture(timerIcon)
+        
+        // Add actions first
+        val actionKeys = addIconActions(hyperBuilder, state)
+        
+        // setBaseInfo - should support multiple actions
+        hyperBuilder.setBaseInfo(
+            title = getNotificationTitle(state),
+            content = "${state.currentPhaseType.name} • ${state.getFormattedRemainingTime()}",
+            pictureKey = "timer_icon",
+            actionKeys = actionKeys
+        )
+        
+        hyperBuilder.setIslandConfig(
+            priority = 0,
+            dismissible = false,
+        )
+        
+        hyperBuilder.setSmallIsland("timer_icon")
+        hyperBuilder.setIslandFirstFloat(false)
+        hyperBuilder.setEnableFloat(false)
+        
+        hyperBuilder.setBigIslandInfo(
+            left = ImageTextInfoLeft(
+                type = 1,
+                picInfo = PicInfo(type = 1, pic = "timer_icon"),
+                textInfo = TextInfo(
+                    title = state.sequenceName + " ",
+                    content = state.currentPhaseType.name.lowercase(getDefault())
+                )
+            ),
+            right = ImageTextInfoRight(
+                type = 2,
+                textInfo = TextInfo(
+                    title = state.getFormattedRemainingTime() + " ",
+                    content = state.getRepetitionDisplay()
+                )
+            )
+        )
+        
+        val resourceBundle = hyperBuilder.buildResourceBundle()
+        val jsonParam = hyperBuilder.buildJsonParam()
+        
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(getNotificationTitle(state))
+            .setContentText(getNotificationContent(state))
+            .setOngoing(state.playbackState == PlaybackState.RUNNING)
+            .setContentIntent(createContentIntent(state))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .addExtras(resourceBundle)
+            .setExtras(resourceBundle.apply { 
+                putString("miui.focus.param", jsonParam)
+            })
+            .build()
+    }
+    
+    private fun buildStandardNotification(state: TimerState): Notification {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Use app icon
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(getNotificationTitle(state))
             .setContentText(getNotificationContent(state))
             .setOngoing(state.playbackState == PlaybackState.RUNNING)
@@ -74,15 +150,11 @@ class TimerNotificationHelper(private val context: Context) {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         
-        // Add action buttons based on playback state
-        addActions(builder, state)
+        addActionsStandard(builder, state)
         
         return builder.build()
     }
     
-    /**
-     * Get notification title based on state
-     */
     private fun getNotificationTitle(state: TimerState): String {
         return when (state.playbackState) {
             PlaybackState.IDLE -> context.getString(R.string.timer_ready)
@@ -92,9 +164,6 @@ class TimerNotificationHelper(private val context: Context) {
         }
     }
     
-    /**
-     * Get notification content text based on state
-     */
     private fun getNotificationContent(state: TimerState): String {
         return when (state.playbackState) {
             PlaybackState.IDLE -> context.getString(R.string.ready_to_start)
@@ -106,14 +175,105 @@ class TimerNotificationHelper(private val context: Context) {
             PlaybackState.COMPLETED -> context.getString(R.string.all_phases_completed)
         }
     }
-    
-    /**
-     * Add action buttons to notification based on current state
-     */
-    private fun addActions(builder: NotificationCompat.Builder, state: TimerState) {
+
+    private fun addIconActions(builder: HyperIslandNotification, state: TimerState): List<String> {
+        Log.d(TAG, "=== addIconActions START ===")
+        Log.d(TAG, "State: ${state.playbackState}")
+        
+        val actionKeys = mutableListOf<String>()
+        
         when (state.playbackState) {
             PlaybackState.RUNNING -> {
-                // Pause and Stop actions
+                Log.d(TAG, "Creating RUNNING state actions WITH ICONS")
+                
+                val pauseAction = HyperAction(
+                    key = "pause",
+                    title = context.getString(R.string.pause),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_pause),
+                    pendingIntent = createActionIntent(TimerAction.Pause, REQUEST_CODE_PAUSE),
+                    actionIntentType = 1
+                )
+                val stopAction = HyperAction(
+                    key = "stop",
+                    title = context.getString(R.string.stop),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_delete),
+                    pendingIntent = createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP),
+                    actionIntentType = 1
+                )
+                val skipAction = HyperAction(
+                    key = "skip",
+                    title = context.getString(R.string.skip),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_next),
+                    pendingIntent = createActionIntent(TimerAction.SkipNext, REQUEST_CODE_SKIP),
+                    actionIntentType = 1
+                )
+                
+                builder.addAction(pauseAction)
+                builder.addAction(stopAction)
+                builder.addAction(skipAction)
+                
+                actionKeys.addAll(listOf("pause", "stop", "skip"))
+                Log.d(TAG, "Added 3 actions with icons for RUNNING state")
+            }
+            PlaybackState.PAUSED -> {
+                Log.d(TAG, "Creating PAUSED state actions WITH ICONS")
+                
+                val resumeAction = HyperAction(
+                    key = "resume",
+                    title = context.getString(R.string.resume),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_play),
+                    pendingIntent = createActionIntent(TimerAction.Resume, REQUEST_CODE_RESUME),
+                    actionIntentType = 1
+                )
+                val stopAction = HyperAction(
+                    key = "stop",
+                    title = context.getString(R.string.stop),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_delete),
+                    pendingIntent = createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP),
+                    actionIntentType = 1
+                )
+                val skipAction = HyperAction(
+                    key = "skip",
+                    title = context.getString(R.string.skip),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_next),
+                    pendingIntent = createActionIntent(TimerAction.SkipNext, REQUEST_CODE_SKIP),
+                    actionIntentType = 1
+                )
+                
+                builder.addAction(resumeAction)
+                builder.addAction(stopAction)
+                builder.addAction(skipAction)
+                
+                actionKeys.addAll(listOf("resume", "stop", "skip"))
+                Log.d(TAG, "Added 3 actions with icons for PAUSED state")
+            }
+            PlaybackState.COMPLETED -> {
+                Log.d(TAG, "Creating COMPLETED state action WITH ICON")
+                
+                val dismissAction = HyperAction(
+                    key = "dismiss",
+                    title = context.getString(R.string.dismiss),
+                    icon = Icon.createWithResource(context, android.R.drawable.ic_delete),
+                    pendingIntent = createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP),
+                    actionIntentType = 1
+                )
+                
+                builder.addAction(dismissAction)
+                actionKeys.add("dismiss")
+                Log.d(TAG, "Added 1 action with icon for COMPLETED state")
+            }
+            PlaybackState.IDLE -> {
+                Log.d(TAG, "IDLE state - no actions")
+            }
+        }
+        
+        Log.d(TAG, "=== addIconActions END - returning keys: $actionKeys ===")
+        return actionKeys
+    }
+
+    private fun addActionsStandard(builder: NotificationCompat.Builder, state: TimerState) {
+        when (state.playbackState) {
+            PlaybackState.RUNNING -> {
                 builder.addAction(
                     android.R.drawable.ic_media_pause,
                     context.getString(R.string.pause),
@@ -162,10 +322,6 @@ class TimerNotificationHelper(private val context: Context) {
         }
     }
     
-    /**
-     * Create PendingIntent that opens the main activity when notification is tapped
-     * Includes sequenceId to restore the timer screen if the app was closed
-     */
     private fun createContentIntent(state: TimerState): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -179,24 +335,28 @@ class TimerNotificationHelper(private val context: Context) {
         )
     }
     
-    /**
-     * Create PendingIntent for a timer action button
-     */
     private fun createActionIntent(action: TimerAction, requestCode: Int): PendingIntent {
-        val intent = Intent(context, TimerService::class.java).apply {
-            putTimerAction(action)
+        val cacheKey = "${action.javaClass.simpleName}_$requestCode"
+        
+        return cachedPendingIntents.getOrPut(cacheKey) {
+            Log.d(TAG, "Creating NEW PendingIntent - action: $action, requestCode: $requestCode")
+            
+            val intent = Intent(context, TimerService::class.java).apply {
+                putTimerAction(action)
+                Log.d(TAG, "Intent created - extras: ${extras?.keySet()?.joinToString()}")
+            }
+            
+            PendingIntent.getService(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            ).also {
+                Log.d(TAG, "PendingIntent cached: $it")
+            }
         }
-        return PendingIntent.getService(
-            context,
-            requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
     }
     
-    /**
-     * Update the existing notification
-     */
     fun updateNotification(state: TimerState) {
         notificationManager.notify(NOTIFICATION_ID, buildNotification(state))
     }

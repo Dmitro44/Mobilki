@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.timer"
-        minSdk = 24
+        minSdk = 35
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -53,7 +53,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.gson)
-    
+    implementation(libs.hyperisland.kit)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
