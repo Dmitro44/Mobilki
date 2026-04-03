@@ -19,7 +19,6 @@ import io.github.d4viddf.hyperisland_kit.models.ImageTextInfoLeft
 import io.github.d4viddf.hyperisland_kit.models.ImageTextInfoRight
 import io.github.d4viddf.hyperisland_kit.models.PicInfo
 import io.github.d4viddf.hyperisland_kit.models.TextInfo
-import io.github.d4viddf.hyperisland_kit.models.TimerInfo
 import java.util.Locale.getDefault
 
 class TimerNotificationHelper(private val context: Context) {
@@ -74,7 +73,7 @@ class TimerNotificationHelper(private val context: Context) {
     }
     
     private fun buildXiaomiNotification(state: TimerState): Notification {
-        val timerIcon = HyperPicture("timer_icon", context, R.drawable.ic_launcher_foreground)
+        val timerIcon = HyperPicture("timer_icon", context, R.drawable.ic_timer)
         
         val hyperBuilder = HyperIslandNotification.Builder(
             context = context,
@@ -91,7 +90,6 @@ class TimerNotificationHelper(private val context: Context) {
         hyperBuilder.setBaseInfo(
             title = getNotificationTitle(state),
             content = "${state.currentPhaseType.name} • ${state.getFormattedRemainingTime()}",
-            pictureKey = "timer_icon",
             actionKeys = actionKeys
         )
         
@@ -126,7 +124,7 @@ class TimerNotificationHelper(private val context: Context) {
         val jsonParam = hyperBuilder.buildJsonParam()
         
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_timer)
             .setContentTitle(getNotificationTitle(state))
             .setContentText(getNotificationContent(state))
             .setOngoing(state.playbackState == PlaybackState.RUNNING)
@@ -142,7 +140,7 @@ class TimerNotificationHelper(private val context: Context) {
     
     private fun buildStandardNotification(state: TimerState): Notification {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_timer)
             .setContentTitle(getNotificationTitle(state))
             .setContentText(getNotificationContent(state))
             .setOngoing(state.playbackState == PlaybackState.RUNNING)
@@ -184,26 +182,26 @@ class TimerNotificationHelper(private val context: Context) {
         
         when (state.playbackState) {
             PlaybackState.RUNNING -> {
-                Log.d(TAG, "Creating RUNNING state actions WITH ICONS")
+                Log.d(TAG, "Creating RUNNING state actions WITH CUSTOM ICONS")
                 
                 val pauseAction = HyperAction(
                     key = "pause",
                     title = context.getString(R.string.pause),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_pause),
+                    icon = Icon.createWithResource(context, R.drawable.ic_pause),
                     pendingIntent = createActionIntent(TimerAction.Pause, REQUEST_CODE_PAUSE),
                     actionIntentType = 1
                 )
                 val stopAction = HyperAction(
                     key = "stop",
                     title = context.getString(R.string.stop),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_delete),
+                    icon = Icon.createWithResource(context, R.drawable.ic_stop),
                     pendingIntent = createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP),
                     actionIntentType = 1
                 )
                 val skipAction = HyperAction(
                     key = "skip",
                     title = context.getString(R.string.skip),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_next),
+                    icon = Icon.createWithResource(context, R.drawable.ic_skip_next),
                     pendingIntent = createActionIntent(TimerAction.SkipNext, REQUEST_CODE_SKIP),
                     actionIntentType = 1
                 )
@@ -213,29 +211,29 @@ class TimerNotificationHelper(private val context: Context) {
                 builder.addAction(skipAction)
                 
                 actionKeys.addAll(listOf("pause", "stop", "skip"))
-                Log.d(TAG, "Added 3 actions with icons for RUNNING state")
+                Log.d(TAG, "Added 3 actions with custom icons for RUNNING state")
             }
             PlaybackState.PAUSED -> {
-                Log.d(TAG, "Creating PAUSED state actions WITH ICONS")
+                Log.d(TAG, "Creating PAUSED state actions WITH CUSTOM ICONS")
                 
                 val resumeAction = HyperAction(
                     key = "resume",
                     title = context.getString(R.string.resume),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_play),
+                    icon = Icon.createWithResource(context, R.drawable.ic_play),
                     pendingIntent = createActionIntent(TimerAction.Resume, REQUEST_CODE_RESUME),
                     actionIntentType = 1
                 )
                 val stopAction = HyperAction(
                     key = "stop",
                     title = context.getString(R.string.stop),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_delete),
+                    icon = Icon.createWithResource(context, R.drawable.ic_stop),
                     pendingIntent = createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP),
                     actionIntentType = 1
                 )
                 val skipAction = HyperAction(
                     key = "skip",
                     title = context.getString(R.string.skip),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_media_next),
+                    icon = Icon.createWithResource(context, R.drawable.ic_skip_next),
                     pendingIntent = createActionIntent(TimerAction.SkipNext, REQUEST_CODE_SKIP),
                     actionIntentType = 1
                 )
@@ -245,22 +243,22 @@ class TimerNotificationHelper(private val context: Context) {
                 builder.addAction(skipAction)
                 
                 actionKeys.addAll(listOf("resume", "stop", "skip"))
-                Log.d(TAG, "Added 3 actions with icons for PAUSED state")
+                Log.d(TAG, "Added 3 actions with custom icons for PAUSED state")
             }
             PlaybackState.COMPLETED -> {
-                Log.d(TAG, "Creating COMPLETED state action WITH ICON")
+                Log.d(TAG, "Creating COMPLETED state action WITH CUSTOM ICON")
                 
                 val dismissAction = HyperAction(
                     key = "dismiss",
                     title = context.getString(R.string.dismiss),
-                    icon = Icon.createWithResource(context, android.R.drawable.ic_delete),
+                    icon = Icon.createWithResource(context, R.drawable.ic_stop),
                     pendingIntent = createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP),
                     actionIntentType = 1
                 )
                 
                 builder.addAction(dismissAction)
                 actionKeys.add("dismiss")
-                Log.d(TAG, "Added 1 action with icon for COMPLETED state")
+                Log.d(TAG, "Added 1 action with custom icon for COMPLETED state")
             }
             PlaybackState.IDLE -> {
                 Log.d(TAG, "IDLE state - no actions")
