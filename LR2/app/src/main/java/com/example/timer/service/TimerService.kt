@@ -94,31 +94,22 @@ class TimerService : Service() {
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.getTimerAction()
-        Log.d(TAG, "=== onStartCommand START ===")
-        Log.d(TAG, "Intent: $intent")
-        Log.d(TAG, "Action: $action")
-        Log.d(TAG, "Intent extras: ${intent?.extras?.keySet()?.joinToString()}")
-        Log.d(TAG, "Current state: ${_timerState.value.playbackState}")
-        Log.d(TAG, "=== onStartCommand END ===")
         
         // Extract and handle timer action
         if (action != null) {
             handleAction(action)
-        } else {
-            Log.w(TAG, "No action found in intent!")
         }
         
         return START_NOT_STICKY // Don't restart if killed
     }
-    
+
     override fun onBind(intent: Intent?): IBinder? {
         // This is a started service, not bound
         return null
     }
-    
+
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "Service destroyed")
         
         // Clean up resources
         stopTimer()
@@ -128,37 +119,18 @@ class TimerService : Service() {
         mediaPlayer = null
         serviceScope.cancel()
     }
-    
+
     /**
      * Handle incoming timer actions
      */
     private fun handleAction(action: TimerAction) {
-        Log.d(TAG, "=== handleAction: $action ===")
         when (action) {
-            is TimerAction.Start -> {
-                Log.d(TAG, "Handling START action for sequence: ${action.sequenceId}")
-                startSequence(action.sequenceId)
-            }
-            is TimerAction.Pause -> {
-                Log.d(TAG, "Handling PAUSE action")
-                pauseTimer()
-            }
-            is TimerAction.Resume -> {
-                Log.d(TAG, "Handling RESUME action")
-                resumeTimer()
-            }
-            is TimerAction.Stop -> {
-                Log.d(TAG, "Handling STOP action")
-                stopTimer()
-            }
-            is TimerAction.SkipNext -> {
-                Log.d(TAG, "Handling SKIP NEXT action")
-                skipNext()
-            }
-            is TimerAction.SkipPrevious -> {
-                Log.d(TAG, "Handling SKIP PREVIOUS action")
-                skipPrevious()
-            }
+            is TimerAction.Start -> startSequence(action.sequenceId)
+            is TimerAction.Pause -> pauseTimer()
+            is TimerAction.Resume -> resumeTimer()
+            is TimerAction.Stop -> stopTimer()
+            is TimerAction.SkipNext -> skipNext()
+            is TimerAction.SkipPrevious -> skipPrevious()
         }
     }
     

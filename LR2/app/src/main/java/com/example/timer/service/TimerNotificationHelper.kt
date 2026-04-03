@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.timer.MainActivity
 import com.example.timer.R
@@ -28,7 +27,6 @@ class TimerNotificationHelper(private val context: Context) {
     private val cachedPendingIntents = mutableMapOf<String, PendingIntent>()
     
     companion object {
-        private const val TAG = "TimerNotificationHelper"
         const val CHANNEL_ID = "timer_service_channel"
         const val CHANNEL_NAME = "Timer Service"
         const val NOTIFICATION_ID = 1001
@@ -83,10 +81,8 @@ class TimerNotificationHelper(private val context: Context) {
         
         hyperBuilder.addPicture(timerIcon)
         
-        // Add actions first
         val actionKeys = addIconActions(hyperBuilder, state)
         
-        // setBaseInfo - should support multiple actions
         hyperBuilder.setBaseInfo(
             title = getNotificationTitle(state),
             content = "${state.currentPhaseType.name} • ${state.getFormattedRemainingTime()}",
@@ -175,15 +171,10 @@ class TimerNotificationHelper(private val context: Context) {
     }
 
     private fun addIconActions(builder: HyperIslandNotification, state: TimerState): List<String> {
-        Log.d(TAG, "=== addIconActions START ===")
-        Log.d(TAG, "State: ${state.playbackState}")
-        
         val actionKeys = mutableListOf<String>()
         
         when (state.playbackState) {
             PlaybackState.RUNNING -> {
-                Log.d(TAG, "Creating RUNNING state actions WITH CUSTOM ICONS")
-                
                 val pauseAction = HyperAction(
                     key = "pause",
                     title = context.getString(R.string.pause),
@@ -211,11 +202,8 @@ class TimerNotificationHelper(private val context: Context) {
                 builder.addAction(skipAction)
                 
                 actionKeys.addAll(listOf("pause", "stop", "skip"))
-                Log.d(TAG, "Added 3 actions with custom icons for RUNNING state")
             }
             PlaybackState.PAUSED -> {
-                Log.d(TAG, "Creating PAUSED state actions WITH CUSTOM ICONS")
-                
                 val resumeAction = HyperAction(
                     key = "resume",
                     title = context.getString(R.string.resume),
@@ -243,11 +231,8 @@ class TimerNotificationHelper(private val context: Context) {
                 builder.addAction(skipAction)
                 
                 actionKeys.addAll(listOf("resume", "stop", "skip"))
-                Log.d(TAG, "Added 3 actions with custom icons for PAUSED state")
             }
             PlaybackState.COMPLETED -> {
-                Log.d(TAG, "Creating COMPLETED state action WITH CUSTOM ICON")
-                
                 val dismissAction = HyperAction(
                     key = "dismiss",
                     title = context.getString(R.string.dismiss),
@@ -258,14 +243,12 @@ class TimerNotificationHelper(private val context: Context) {
                 
                 builder.addAction(dismissAction)
                 actionKeys.add("dismiss")
-                Log.d(TAG, "Added 1 action with custom icon for COMPLETED state")
             }
             PlaybackState.IDLE -> {
-                Log.d(TAG, "IDLE state - no actions")
+                // No actions
             }
         }
         
-        Log.d(TAG, "=== addIconActions END - returning keys: $actionKeys ===")
         return actionKeys
     }
 
@@ -273,43 +256,41 @@ class TimerNotificationHelper(private val context: Context) {
         when (state.playbackState) {
             PlaybackState.RUNNING -> {
                 builder.addAction(
-                    android.R.drawable.ic_media_pause,
+                    R.drawable.ic_pause,
                     context.getString(R.string.pause),
                     createActionIntent(TimerAction.Pause, REQUEST_CODE_PAUSE)
                 )
                 builder.addAction(
-                    android.R.drawable.ic_delete,
+                    R.drawable.ic_stop,
                     context.getString(R.string.stop),
                     createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP)
                 )
                 builder.addAction(
-                    android.R.drawable.ic_media_next,
+                    R.drawable.ic_skip_next,
                     context.getString(R.string.skip),
                     createActionIntent(TimerAction.SkipNext, REQUEST_CODE_SKIP)
                 )
             }
             PlaybackState.PAUSED -> {
-                // Resume and Stop actions
                 builder.addAction(
-                    android.R.drawable.ic_media_play,
+                    R.drawable.ic_play,
                     context.getString(R.string.resume),
                     createActionIntent(TimerAction.Resume, REQUEST_CODE_RESUME)
                 )
                 builder.addAction(
-                    android.R.drawable.ic_delete,
+                    R.drawable.ic_stop,
                     context.getString(R.string.stop),
                     createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP)
                 )
                 builder.addAction(
-                    android.R.drawable.ic_media_next,
+                    R.drawable.ic_skip_next,
                     context.getString(R.string.skip),
                     createActionIntent(TimerAction.SkipNext, REQUEST_CODE_SKIP)
                 )
             }
             PlaybackState.COMPLETED -> {
-                // Only stop action
                 builder.addAction(
-                    android.R.drawable.ic_delete,
+                    R.drawable.ic_stop,
                     context.getString(R.string.dismiss),
                     createActionIntent(TimerAction.Stop, REQUEST_CODE_STOP)
                 )
@@ -337,11 +318,8 @@ class TimerNotificationHelper(private val context: Context) {
         val cacheKey = "${action.javaClass.simpleName}_$requestCode"
         
         return cachedPendingIntents.getOrPut(cacheKey) {
-            Log.d(TAG, "Creating NEW PendingIntent - action: $action, requestCode: $requestCode")
-            
             val intent = Intent(context, TimerService::class.java).apply {
                 putTimerAction(action)
-                Log.d(TAG, "Intent created - extras: ${extras?.keySet()?.joinToString()}")
             }
             
             PendingIntent.getService(
@@ -349,9 +327,7 @@ class TimerNotificationHelper(private val context: Context) {
                 requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            ).also {
-                Log.d(TAG, "PendingIntent cached: $it")
-            }
+            )
         }
     }
     
