@@ -84,8 +84,8 @@ class TimerNotificationHelper(private val context: Context) {
         val actionKeys = addIconActions(hyperBuilder, state)
         
         hyperBuilder.setBaseInfo(
-            title = getNotificationTitle(state),
-            content = "${state.currentPhaseType.name} • ${state.getFormattedRemainingTime()}",
+            title = state.getFormattedRemainingTime(),
+            content = "${getNotificationTitle(state)} • ${state.currentPhaseType.name}",
             actionKeys = actionKeys
         )
         
