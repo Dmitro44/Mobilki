@@ -258,48 +258,20 @@ private fun TimerDisplaySection(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Circular progress indicator
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(280.dp)
-            ) {
-                // Background circle
-                CircularProgressIndicator(
-                    progress = { 1f },
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    strokeWidth = 12.dp,
-                )
-                
-                // Phase progress circle
-                CircularProgressIndicator(
-                    progress = { timerState.getPhaseProgress() },
-                    modifier = Modifier.fillMaxSize(),
-                    color = getPhaseColor(timerState.currentPhaseType),
-                    strokeWidth = 12.dp,
-                )
-                
-                // Timer text
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = timerState.getFormattedRemainingTime(),
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = 64.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    
-                    Text(
-                        text = getPlaybackStateText(timerState.playbackState),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            Text(
+                text = timerState.getFormattedRemainingTime(),
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontSize = 96.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            Text(
+                text = getPlaybackStateText(timerState.playbackState),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
