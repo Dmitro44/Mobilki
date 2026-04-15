@@ -34,7 +34,8 @@ fun AppNavHost(
     navController: NavHostController,
     viewModelFactory: ViewModelFactory,
     startDestination: String = Routes.Splash.route,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSplashPassed: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -46,9 +47,9 @@ fun AppNavHost(
             SplashScreen(
                 onNavigateToMain = {
                     navController.navigate(Routes.Main.route) {
-                        // Clear splash screen from back stack
                         popUpTo(Routes.Splash.route) { inclusive = true }
                     }
+                    onSplashPassed()
                 }
             )
         }

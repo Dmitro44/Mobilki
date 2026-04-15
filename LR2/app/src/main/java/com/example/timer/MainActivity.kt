@@ -37,6 +37,10 @@ import kotlinx.coroutines.runBlocking
  */
 class MainActivity : ComponentActivity() {
     
+    companion object {
+        var hasPassedSplash = false
+    }
+    
     // Permission launcher for notification permission (Android 13+)
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -92,9 +96,11 @@ class MainActivity : ComponentActivity() {
                     viewModelFactory = viewModelFactory,
                     startDestination = when {
                         hasNotificationIntent -> Routes.Timer.createRoute(notificationSequenceId)
+                        hasPassedSplash -> Routes.Main.route
                         else -> Routes.Splash.route
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    onSplashPassed = { hasPassedSplash = true }
                 )
             }
         }
