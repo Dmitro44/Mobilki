@@ -140,6 +140,11 @@ class TimerService : Service() {
     private fun startSequence(sequenceId: Long) {
         serviceScope.launch {
             try {
+                if (_timerState.value.playbackState == PlaybackState.RUNNING ||
+                    _timerState.value.playbackState == PlaybackState.PAUSED) {
+                    stopCountdown()
+                }
+                
                 // Load sequence from repository
                 val sequence = repository.getSequenceById(sequenceId)
                 
