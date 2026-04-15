@@ -33,7 +33,7 @@ object LocaleHelper {
      * This ensures that resources are loaded with the correct locale
      */
     fun wrapContext(context: Context, language: Language): Context {
-        val locale = Locale(language.code)
+        val locale = Locale.forLanguageTag(language.code)
         Locale.setDefault(locale)
         
         val config = Configuration(context.resources.configuration)
