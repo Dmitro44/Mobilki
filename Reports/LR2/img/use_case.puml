@@ -1,20 +1,27 @@
 @startuml
 left to right direction
-actor "Пользователь" as user
+actor user
+
 package "Приложение Таймер" {
-  usecase "Просмотр списка последовательностей" as UC_Read
-  usecase "Создание и редактирование" as UC_Edit
-  usecase "Удаление последовательности" as UC_Delete
-  usecase "Запуск таймера" as UC_Play
-  usecase "Управление таймером (в приложении)" as UC_Timer
-  usecase "Настройка темы, шрифта и языка" as UC_Settings
-  usecase "Очистка всех данных" as UC_Clear
-  
-  usecase "Фоновый отсчет времени" as UC_Service
-  usecase "Мониторинг через уведомление" as UC_Monitor
-  usecase "Управление через уведомление" as UC_NotifyControl
-  usecase "Подтверждение удаления" as UC_Confirm
+  together {
+    usecase "Просмотр списка последовательностей" as UC_Read
+    usecase "Создание и редактирование последовательности" as UC_Edit
+    usecase "Удаление последовательности" as UC_Delete
+    usecase "Запуск таймера" as UC_Play
+    usecase "Управление таймером (в приложении)" as UC_Timer
+    usecase "Настройка темы, шрифта и языка" as UC_Settings
+    usecase "Очистка всех данных" as UC_Clear
+  }
+
+  together {
+    usecase "Фоновый отсчет времени" as UC_Service
+    usecase "Мониторинг через уведомление" as UC_Monitor
+    usecase "Управление через уведомление" as UC_NotifyControl
+    usecase "Подтверждение удаления" as UC_Confirm
+  }
 }
+
+' связи user -> основные
 user --> UC_Read
 user --> UC_Edit
 user --> UC_Delete
@@ -22,12 +29,15 @@ user --> UC_Play
 user --> UC_Timer
 user --> UC_Settings
 user --> UC_Clear
-user --> UC_Monitor
-user --> UC_NotifyControl
+
+' include/extend
 UC_Play ..> UC_Service : <<include>>
-UC_Service ..> UC_Monitor : <<include>>
-' Управление из уведомления расширяет базовую функцию управления
+UC_Monitor ..> UC_Service : <<extend>>
 UC_NotifyControl ..> UC_Timer : <<extend>>
-' Подтверждение расширяет процесс удаления
 UC_Confirm ..> UC_Delete : <<extend>>
+
+' подсказки “вправо” для extend (при необходимости)
+UC_Timer -[hidden]-> UC_NotifyControl
+UC_Delete -[hidden]-> UC_Confirm
+UC_Service -[hidden]-> UC_Monitor
 @enduml
