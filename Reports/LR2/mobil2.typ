@@ -161,15 +161,19 @@ interface TimerSequenceDao {
     @Query("SELECT * FROM timer_sequences WHERE id = :id")
     suspend fun getById(id: Long): TimerSequence?
     
-    @Query("SELECT * FROM timer_sequences ORDER BY updated_at DESC")
-    fun getAllFlow(): Flow<List<TimerSequence>>
-    
     @Transaction
     @Query("SELECT * FROM timer_sequences WHERE id = :id")
     suspend fun getSequenceWithPhases(id: Long): TimerSequenceWithPhases?
     
+    @Transaction
+    @Query("SELECT * FROM timer_sequences ORDER BY updated_at DESC")
+    fun getAllSequencesWithPhasesFlow(): Flow<List<TimerSequenceWithPhases>>
+    
     @Query("DELETE FROM timer_sequences")
     suspend fun deleteAll()
+    
+    @Query("SELECT COUNT(*) FROM timer_sequences")
+    suspend fun getCount(): Int
 }
   ```
 ]
@@ -214,9 +218,15 @@ class PreferencesManager private constructor(
 private fun startSequence(sequenceId: Long) {
     serviceScope.launch {
         try {
+            if (_timerState.value.playbackState == PlaybackState.RUNNING ||
+                _timerState.value.playbackState == PlaybackState.PAUSED) {
+                stopCountdown()
+            }
+            
             val sequence = repository.getSequenceById(sequenceId)
             
             if (sequence == null || sequence.phases.isEmpty()) {
+                Log.e(TAG, "Invalid sequence or no phases found")
                 stopTimer()
                 return@launch
             }
@@ -235,13 +245,21 @@ private fun startSequence(sequenceId: Long) {
                 sequenceId = sequence.id,
                 sequenceName = sequence.name,
                 currentPhaseIndex = currentPhaseIndex,
-                remainingSeconds = currentPhaseRemainingSeconds
+                currentRepetitionIndex = currentRepetitionIndex,
+                totalRepetitions = firstPhase.repetitions,
+                currentPhaseType = firstPhase.phaseType,
+                totalPhases = currentPhasesList.size,
+                allPhases = currentPhasesList,
+                remainingSeconds = currentPhaseRemainingSeconds,
+                phaseDurationSeconds = firstPhase.durationSeconds
             )
             
             startForegroundService()
+            
             startCountdown()
             
         } catch (e: Exception) {
+            Log.e(TAG, "Error starting sequence", e)
             stopTimer()
         }
     }
@@ -254,8 +272,7 @@ private fun startSequence(sequenceId: Long) {
 private fun onPhaseComplete() {
     playBeep()
     
-    val currentPhase = 
-        currentPhasesList.getOrNull(currentPhaseIndex) ?: return
+    val currentPhase = currentPhasesList.getOrNull(currentPhaseIndex) ?: return
     
     if (currentRepetitionIndex < currentPhase.repetitions - 1) {
         currentRepetitionIndex++
@@ -279,7 +296,11 @@ private fun onPhaseComplete() {
             updateState(
                 playbackState = PlaybackState.RUNNING,
                 currentPhaseIndex = currentPhaseIndex,
-                remainingSeconds = currentPhaseRemainingSeconds
+                currentRepetitionIndex = currentRepetitionIndex,
+                totalRepetitions = nextPhase.repetitions,
+                currentPhaseType = nextPhase.phaseType,
+                remainingSeconds = currentPhaseRemainingSeconds,
+                phaseDurationSeconds = nextPhase.durationSeconds
             )
             
             startCountdown()
@@ -294,48 +315,65 @@ private fun onPhaseComplete() {
 #stp2024.listing[Создание уведомления для Xiaomi HyperOS][
   ```kotlin
 private fun buildXiaomiNotification(state: TimerState): Notification {
+    val timerIcon = HyperPicture("timer_icon", context, R.drawable.ic_timer)
+
     val hyperBuilder = HyperIslandNotification.Builder(
         context = context,
         businessName = "timer_service",
         ticker = CHANNEL_NAME
     )
-    
-    hyperBuilder.addPicture(
-        HyperPicture("timer_icon", context, R.drawable.ic_timer)
-    )
-    
+
+    hyperBuilder.addPicture(timerIcon)
+
+    val actionKeys = addIconActions(hyperBuilder, state)
+
     hyperBuilder.setBaseInfo(
         title = state.getFormattedRemainingTime(),
-        content = "${getNotificationTitle(state)} • ${state.currentPhaseType.name}",
-        actionKeys = listOf("pause", "stop", "skip")
+        content = "${getNotificationTitle(state)} • ${state.currentPhaseType.getLocalizedName(context)}",
+        actionKeys = actionKeys
     )
-    
+
+    hyperBuilder.setIslandConfig(
+        priority = 0,
+        dismissible = false,
+    )
+
+    hyperBuilder.setSmallIsland("timer_icon")
+    hyperBuilder.setIslandFirstFloat(false)
+    hyperBuilder.setEnableFloat(false)
+
     hyperBuilder.setBigIslandInfo(
         left = ImageTextInfoLeft(
             type = 1,
             picInfo = PicInfo(type = 1, pic = "timer_icon"),
             textInfo = TextInfo(
-                title = state.sequenceName,
-                content = state.currentPhaseType.name
+                title = state.sequenceName + " ",
+                content = state.currentPhaseType.getLocalizedName(context).lowercase(getDefault())
             )
         ),
         right = ImageTextInfoRight(
             type = 2,
             textInfo = TextInfo(
-                title = state.getFormattedRemainingTime(),
+                title = state.getFormattedRemainingTime() + " ",
                 content = state.getRepetitionDisplay()
             )
         )
     )
-    
+
     val resourceBundle = hyperBuilder.buildResourceBundle()
-    
+    val jsonParam = hyperBuilder.buildJsonParam()
+
     return NotificationCompat.Builder(context, CHANNEL_ID)
         .setSmallIcon(R.drawable.ic_timer)
         .setContentTitle(getNotificationTitle(state))
         .setContentText(getNotificationContent(state))
-        .addExtras(resourceBundle.apply { 
-            putString("miui.focus.param", hyperBuilder.buildJsonParam())
+        .setOngoing(state.playbackState == PlaybackState.RUNNING)
+        .setContentIntent(createContentIntent(state))
+        .setPriority(NotificationCompat.PRIORITY_LOW)
+        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        .addExtras(resourceBundle)
+        .setExtras(resourceBundle.apply { 
+            putString("miui.focus.param", jsonParam)
         })
         .build()
 }
