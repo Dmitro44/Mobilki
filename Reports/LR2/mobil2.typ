@@ -54,7 +54,7 @@
 
 #figure(
   rect(stroke: 1.5pt + black, inset: 0pt)[
-    #image("img/list.png", height: 60%)
+    #image("img/list.jpg", height: 52%)
   ],
   caption: [Главный экран со списком последовательностей]
 ) <listScreen>
@@ -71,7 +71,7 @@
 
 #figure(
   rect(stroke: 1.5pt + black, inset: 0pt)[
-    #image("img/timer.png", height: 50%)
+    #image("img/timer.jpg", height: 50%)
   ],
   caption: [Экран воспроизведения таймера]
 ) <timerScreen>
@@ -88,7 +88,7 @@
 
 #figure(
   rect(stroke: 1.5pt + black, inset: 0pt)[
-    #image("img/settings.png", height: 50%)
+    #image("img/settings.jpg", height: 50%)
   ],
   caption: [Экран настроек приложения]
 ) <settingsScreen>
