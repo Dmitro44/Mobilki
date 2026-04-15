@@ -33,11 +33,12 @@ import com.example.timer.ui.viewmodel.TimerViewModel
 fun AppNavHost(
     navController: NavHostController,
     viewModelFactory: ViewModelFactory,
+    startDestination: String = Routes.Splash.route,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         // Splash screen - initial app screen
@@ -92,7 +93,11 @@ fun AppNavHost(
                 viewModel = timerViewModel,
                 sequenceId = sequenceId,
                 onNavigateBack = {
-                    navController.popBackStack()
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Routes.Main.route) {
+                            popUpTo(Routes.Timer.route) { inclusive = true }
+                        }
+                    }
                 }
             )
         }

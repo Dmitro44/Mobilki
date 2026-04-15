@@ -62,11 +62,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Request notification permission on Android 13+
+        val notificationSequenceId = intent.getLongExtra("EXTRA_SEQUENCE_ID", -1L)
+        val hasNotificationIntent = notificationSequenceId != -1L
+        
         requestNotificationPermission()
         
         setContent {
-            // Collect user preferences
             val preferencesManager = PreferencesManager.getInstance(applicationContext)
             val userPreferences by preferencesManager.userPreferencesFlow.collectAsState(
                 initial = com.example.timer.data.local.preferences.UserPreferences()
@@ -80,32 +81,19 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModelFactory = ViewModelFactory(applicationContext)
                 
-                // Initialize locale on first launch (ensures system settings match)
                 LaunchedEffect(Unit) {
                     if (LocaleHelper.getCurrentLocaleCode(context) != userPreferences.language.code) {
                         LocaleHelper.setLocale(context, userPreferences.language)
                     }
                 }
                 
-                // Handle navigation from notification intent
-                LaunchedEffect(intent) {
-                    val sequenceId = intent.getLongExtra("EXTRA_SEQUENCE_ID", -1L)
-                    if (sequenceId != -1L) {
-                        // Consume the intent extra so it doesn't trigger again on recreation
-                        intent.removeExtra("EXTRA_SEQUENCE_ID")
-                        
-                        // First, clear everything and go to Main
-                        navController.navigate(Routes.Main.route) {
-                            popUpTo(Routes.Splash.route) { inclusive = true }
-                        }
-                        // Then navigate to Timer on top of Main
-                        navController.navigate(Routes.Timer.createRoute(sequenceId))
-                    }
-                }
-                
                 AppNavHost(
                     navController = navController,
                     viewModelFactory = viewModelFactory,
+                    startDestination = when {
+                        hasNotificationIntent -> Routes.Timer.createRoute(notificationSequenceId)
+                        else -> Routes.Splash.route
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
             }
