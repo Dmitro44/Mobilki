@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.rememberNavController
+import com.example.timer.service.TimerService
 import com.example.timer.ui.navigation.Routes
 import com.example.timer.data.local.preferences.PreferencesManager
 import com.example.timer.ui.ViewModelFactory
@@ -96,6 +97,10 @@ class MainActivity : ComponentActivity() {
                     viewModelFactory = viewModelFactory,
                     startDestination = when {
                         hasNotificationIntent -> Routes.Timer.createRoute(notificationSequenceId)
+                        TimerService.isActive() -> {
+                            hasPassedSplash = true
+                            Routes.Timer.createRoute(TimerService.timerState.value.sequenceId)
+                        }
                         hasPassedSplash -> Routes.Main.route
                         else -> Routes.Splash.route
                     },
