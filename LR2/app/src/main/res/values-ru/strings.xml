@@ -77,4 +77,10 @@
     <string name="timer_completed">Таймер завершен</string>
     <string name="ready_to_start">Готов к запуску</string>
     <string name="all_phases_completed">Все фазы завершены!</string>
+
+    <!-- Phase Types -->
+    <string name="phase_warmup">Разминка</string>
+    <string name="phase_work">Работа</string>
+    <string name="phase_rest">Отдых</string>
+    <string name="phase_cooldown">Заминка</string>
 </resources>

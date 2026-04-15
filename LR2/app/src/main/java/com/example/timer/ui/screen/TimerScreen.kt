@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
 import com.example.timer.R
 import com.example.timer.domain.model.PhaseType
+import com.example.timer.domain.model.getLocalizedName
 import com.example.timer.service.PlaybackState
 import com.example.timer.service.TimerState
 import com.example.timer.ui.util.TimerServiceHelper
@@ -183,8 +184,9 @@ private fun PhaseInfoSection(
                 shape = RoundedCornerShape(8.dp),
                 color = getPhaseColor(timerState.currentPhaseType)
             ) {
+                val context = LocalContext.current
                 Text(
-                    text = timerState.currentPhaseType.name,
+                    text = timerState.currentPhaseType.getLocalizedName(context),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.White,
@@ -369,6 +371,7 @@ private fun PhaseQueueSection(
     timerState: TimerState,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     // Generate a list of all individual steps (phase index + repetition index)
     val queueItems = remember(timerState.allPhases) {
         timerState.allPhases.flatMapIndexed { phaseIndex, phase ->
@@ -434,7 +437,7 @@ private fun PhaseQueueSection(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = phase.phaseType.name,
+                            text = phase.phaseType.getLocalizedName(context),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                             maxLines = 1

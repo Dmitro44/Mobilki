@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.timer.MainActivity
 import com.example.timer.R
+import com.example.timer.domain.model.getLocalizedName
 import io.github.d4viddf.hyperisland_kit.HyperAction
 import io.github.d4viddf.hyperisland_kit.HyperIslandNotification
 import io.github.d4viddf.hyperisland_kit.HyperPicture
@@ -85,7 +86,7 @@ class TimerNotificationHelper(private val context: Context) {
         
         hyperBuilder.setBaseInfo(
             title = state.getFormattedRemainingTime(),
-            content = "${getNotificationTitle(state)} • ${state.currentPhaseType.name}",
+            content = "${getNotificationTitle(state)} • ${state.currentPhaseType.getLocalizedName(context)}",
             actionKeys = actionKeys
         )
         
@@ -104,7 +105,7 @@ class TimerNotificationHelper(private val context: Context) {
                 picInfo = PicInfo(type = 1, pic = "timer_icon"),
                 textInfo = TextInfo(
                     title = state.sequenceName + " ",
-                    content = state.currentPhaseType.name.lowercase(getDefault())
+                    content = state.currentPhaseType.getLocalizedName(context).lowercase(getDefault())
                 )
             ),
             right = ImageTextInfoRight(
@@ -162,7 +163,7 @@ class TimerNotificationHelper(private val context: Context) {
         return when (state.playbackState) {
             PlaybackState.IDLE -> context.getString(R.string.ready_to_start)
             PlaybackState.RUNNING, PlaybackState.PAUSED -> {
-                val phaseInfo = "${state.currentPhaseType.name} - ${state.getFormattedRemainingTime()}"
+                val phaseInfo = "${state.currentPhaseType.getLocalizedName(context)} - ${state.getFormattedRemainingTime()}"
                 val repInfo = "${context.getString(R.string.rep_label)} ${state.getRepetitionDisplay()}, ${context.getString(R.string.phase_label)} ${state.getPhaseDisplay()}"
                 "$phaseInfo • $repInfo"
             }

@@ -1,6 +1,7 @@
 package com.example.timer.service
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.media.AudioManager
@@ -12,19 +13,23 @@ import android.os.IBinder
 import android.util.Log
 import com.example.timer.R
 import com.example.timer.data.local.database.AppDatabase
+import com.example.timer.data.local.preferences.PreferencesManager
 import com.example.timer.data.repository.TimerRepositoryImpl
 import com.example.timer.domain.model.PhaseType
 import com.example.timer.domain.model.TimerPhaseModel
 import com.example.timer.domain.model.TimerSequenceModel
 import com.example.timer.domain.repository.TimerRepository
+import com.example.timer.ui.util.LocaleHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Foreground service that manages timer countdown and playback
@@ -70,6 +75,14 @@ class TimerService : Service() {
         }
     }
     
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = PreferencesManager.getInstance(newBase)
+        val language = runBlocking { 
+            prefs.userPreferencesFlow.first().language 
+        }
+        super.attachBaseContext(LocaleHelper.wrapContext(newBase, language))
+    }
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service created")

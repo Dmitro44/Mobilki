@@ -1,5 +1,8 @@
 package com.example.timer.domain.model
 
+import android.content.Context
+import com.example.timer.R
+
 enum class PhaseType {
     WARMUP,
     WORK,
@@ -11,6 +14,15 @@ enum class PhaseType {
             return entries.find { it.name.equals(value, ignoreCase = true) } 
                 ?: WORK
         }
+    }
+}
+
+fun PhaseType.getLocalizedName(context: Context): String {
+    return when (this) {
+        PhaseType.WARMUP -> context.getString(R.string.phase_warmup)
+        PhaseType.WORK -> context.getString(R.string.phase_work)
+        PhaseType.REST -> context.getString(R.string.phase_rest)
+        PhaseType.COOLDOWN -> context.getString(R.string.phase_cooldown)
     }
 }
 

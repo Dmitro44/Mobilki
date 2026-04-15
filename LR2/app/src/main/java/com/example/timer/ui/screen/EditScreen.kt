@@ -21,10 +21,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.example.timer.R
 import com.example.timer.domain.model.PhaseType
 import com.example.timer.domain.model.TimerPhaseModel
+import com.example.timer.domain.model.getLocalizedName
 import com.example.timer.ui.viewmodel.EditViewModel
 import kotlinx.coroutines.launch
 
@@ -316,6 +318,7 @@ private fun PhaseCard(
     onMoveDown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
     
     Card(
@@ -388,7 +391,7 @@ private fun PhaseCard(
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = phase.phaseType.name,
+                    value = phase.phaseType.getLocalizedName(context),
                     onValueChange = {},
                     readOnly = true,
                     modifier = Modifier
@@ -403,7 +406,7 @@ private fun PhaseCard(
                 ) {
                     PhaseType.entries.forEach { type ->
                         DropdownMenuItem(
-                            text = { Text(type.name) },
+                            text = { Text(type.getLocalizedName(context)) },
                             onClick = {
                                 onUpdate(phase.copy(phaseType = type))
                                 expanded = false

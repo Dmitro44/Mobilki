@@ -77,4 +77,10 @@
     <string name="timer_completed">Timer Completed</string>
     <string name="ready_to_start">Ready to start</string>
     <string name="all_phases_completed">All phases completed!</string>
+
+    <!-- Phase Types -->
+    <string name="phase_warmup">Warm-up</string>
+    <string name="phase_work">Work</string>
+    <string name="phase_rest">Rest</string>
+    <string name="phase_cooldown">Cool-down</string>
 </resources>
