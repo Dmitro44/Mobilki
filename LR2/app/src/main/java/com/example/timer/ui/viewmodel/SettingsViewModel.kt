@@ -59,10 +59,4 @@ class SettingsViewModel(
             onLanguageApplied()
         }
     }
-    
-    fun resetToDefaults() {
-        viewModelScope.launch {
-            repository.clearPreferences()
-        }
-    }
 }

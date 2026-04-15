@@ -25,8 +25,4 @@ class PreferencesRepositoryImpl(
     override suspend fun setLanguage(language: Language) {
         preferencesManager.setLanguage(language)
     }
-    
-    override suspend fun clearPreferences() {
-        preferencesManager.clearPreferences()
-    }
 }

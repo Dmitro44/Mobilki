@@ -19,7 +19,7 @@
     <!-- Main Screen -->
     <string name="timer_sequences">Последовательности</string>
     <string name="timer_sequences_short">Послед-ти</string>
-    <string name="delete_all_sequences">Удалить все</string>
+    <string name="delete_all_sequences">Удалить все последовательности</string>
     <string name="delete_all_confirmation">Вы уверены, что хотите удалить все последовательности? Это действие нельзя отменить.</string>
     <string name="delete_all_btn">Удалить все</string>
     <string name="delete_sequence">Удалить последовательность</string>

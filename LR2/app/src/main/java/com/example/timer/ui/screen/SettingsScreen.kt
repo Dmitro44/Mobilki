@@ -9,9 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +37,6 @@ fun SettingsScreen(
     val activity = context as? com.example.timer.MainActivity
     val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
     val sequences by viewModel.sequences.collectAsStateWithLifecycle()
-    var showResetDialog by remember { mutableStateOf(false) }
     var showDeleteAllDialog by remember { mutableStateOf(false) }
     
     Scaffold(
@@ -116,25 +114,6 @@ fun SettingsScreen(
                 )
             }
             
-            Divider()
-            
-            // Reset Section
-            OutlinedButton(
-                onClick = { showResetDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.reset_to_defaults))
-            }
-            
             // Delete All Sequences Section
             if (sequences.isNotEmpty()) {
                 OutlinedButton(
@@ -156,33 +135,6 @@ fun SettingsScreen(
         }
     }
     
-    // Reset confirmation dialog
-    if (showResetDialog) {
-        AlertDialog(
-            onDismissRequest = { showResetDialog = false },
-            title = { Text(stringResource(R.string.reset_settings)) },
-            text = { Text(stringResource(R.string.reset_confirmation)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.resetToDefaults()
-                        showResetDialog = false
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(R.string.reset))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
-
     // Delete all confirmation dialog
     if (showDeleteAllDialog) {
         AlertDialog(

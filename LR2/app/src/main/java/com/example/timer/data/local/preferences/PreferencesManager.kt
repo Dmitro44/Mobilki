@@ -59,10 +59,4 @@ class PreferencesManager private constructor(private val context: Context) {
             preferences[KEY_LANGUAGE] = language.code
         }
     }
-    
-    suspend fun clearPreferences() {
-        dataStore.edit { preferences ->
-            preferences.clear()
-        }
-    }
 }

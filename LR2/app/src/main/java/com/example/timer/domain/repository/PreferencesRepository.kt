@@ -14,6 +14,4 @@ interface PreferencesRepository {
     suspend fun setFontSize(fontSize: FontSize)
     
     suspend fun setLanguage(language: Language)
-    
-    suspend fun clearPreferences()
 }
