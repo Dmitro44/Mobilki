@@ -4,9 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-/**
- * Room entity representing a timer sequence
- */
 @Entity(tableName = "timer_sequences")
 data class TimerSequence(
     @PrimaryKey(autoGenerate = true)

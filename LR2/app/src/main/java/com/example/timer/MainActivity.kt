@@ -27,27 +27,15 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
-/**
- * Main activity for the Timer application
- * 
- * Responsibilities:
- * - Set up navigation graph
- * - Initialize ViewModelFactory for dependency injection
- * - Handle notification permissions (Android 13+)
- * - Enable edge-to-edge display
- */
 class MainActivity : ComponentActivity() {
     
     companion object {
         var hasPassedSplash = false
     }
     
-    // Permission launcher for notification permission (Android 13+)
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        // Handle permission result if needed
-        // For now, we proceed regardless as notifications are not critical
     }
     
     override fun attachBaseContext(newBase: Context) {
@@ -83,6 +71,7 @@ class MainActivity : ComponentActivity() {
                 fontSize = userPreferences.fontSize
             ) {
                 val context = LocalContext.current
+                val timerState by TimerService.timerState.collectAsState()
                 val navController = rememberNavController()
                 val viewModelFactory = ViewModelFactory(applicationContext)
                 
@@ -99,7 +88,7 @@ class MainActivity : ComponentActivity() {
                         hasNotificationIntent -> Routes.Timer.createRoute(notificationSequenceId)
                         TimerService.isActive() -> {
                             hasPassedSplash = true
-                            Routes.Timer.createRoute(TimerService.timerState.value.sequenceId)
+                            Routes.Timer.createRoute(timerState.sequenceId)
                         }
                         hasPassedSplash -> Routes.Main.route
                         else -> Routes.Splash.route
@@ -111,11 +100,7 @@ class MainActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * Recreate activity with smooth fade animation
-     */
     fun recreateWithAnimation() {
-        // Remove timer extras to prevent auto-restarting timer on language change
         intent.removeExtra("EXTRA_SEQUENCE_ID")
         
         finish()
@@ -132,10 +117,6 @@ class MainActivity : ComponentActivity() {
         startActivity(intent)
     }
     
-    /**
-     * Request notification permission on Android 13+ (API 33+)
-     * Required for showing timer notifications
-     */
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(

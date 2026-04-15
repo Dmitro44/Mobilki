@@ -41,12 +41,10 @@ fun EditScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     
-    // Load sequence when screen appears
     LaunchedEffect(sequenceId) {
         viewModel.loadSequence(sequenceId)
     }
     
-    // Navigate back on successful save
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
             onNavigateBack()
@@ -73,7 +71,6 @@ fun EditScreen(
                     }
                 },
                 actions = {
-                    // Save button
                     IconButton(
                         onClick = {
                             scope.launch {
@@ -109,7 +106,6 @@ fun EditScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Sequence name input
             item {
                 NameInput(
                     name = uiState.name,
@@ -117,7 +113,6 @@ fun EditScreen(
                 )
             }
             
-            // Color picker
             item {
                 ColorPicker(
                     selectedColor = uiState.selectedColor,
@@ -125,7 +120,6 @@ fun EditScreen(
                 )
             }
             
-            // Phases section header
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -151,7 +145,6 @@ fun EditScreen(
                 }
             }
             
-            // Phase list
             itemsIndexed(
                 items = uiState.phases,
                 key = { index, _ -> index }
@@ -167,7 +160,6 @@ fun EditScreen(
                 )
             }
             
-            // Error message
             uiState.error?.let { error ->
                 item {
                     Card(
@@ -227,18 +219,18 @@ private fun ColorPicker(
     modifier: Modifier = Modifier
 ) {
     val colors = listOf(
-        Color(0xFF6200EE), // Purple
-        Color(0xFF3700B3), // Dark Purple
-        Color(0xFF03DAC6), // Teal
-        Color(0xFF018786), // Dark Teal
-        Color(0xFFFF5722), // Deep Orange
-        Color(0xFFE91E63), // Pink
-        Color(0xFF9C27B0), // Purple
-        Color(0xFF2196F3), // Blue
-        Color(0xFF4CAF50), // Green
-        Color(0xFFFFEB3B), // Yellow
-        Color(0xFFFF9800), // Orange
-        Color(0xFF795548)  // Brown
+        Color(0xFF6200EE),
+        Color(0xFF3700B3),
+        Color(0xFF03DAC6),
+        Color(0xFF018786),
+        Color(0xFFFF5722),
+        Color(0xFFE91E63),
+        Color(0xFF9C27B0),
+        Color(0xFF2196F3),
+        Color(0xFF4CAF50),
+        Color(0xFFFFEB3B),
+        Color(0xFFFF9800),
+        Color(0xFF795548)
     )
     
     Column(
@@ -251,7 +243,6 @@ private fun ColorPicker(
             fontWeight = FontWeight.SemiBold
         )
         
-        // Color grid (3 columns)
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -334,7 +325,6 @@ private fun PhaseCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header with phase number and controls
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -349,7 +339,6 @@ private fun PhaseCard(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // Move up button
                     IconButton(
                         onClick = onMoveUp,
                         enabled = index > 0
@@ -360,7 +349,6 @@ private fun PhaseCard(
                         )
                     }
                     
-                    // Move down button
                     IconButton(
                         onClick = onMoveDown,
                         enabled = index < totalPhases - 1
@@ -371,7 +359,6 @@ private fun PhaseCard(
                         )
                     }
                     
-                    // Delete button
                     IconButton(
                         onClick = { showDeleteDialog = true }
                     ) {
@@ -384,7 +371,6 @@ private fun PhaseCard(
                 }
             }
             
-            // Phase type dropdown
             var expanded by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -416,12 +402,10 @@ private fun PhaseCard(
                 }
             }
             
-            // Duration and repetitions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Duration input
                 OutlinedTextField(
                     value = if (phase.durationSeconds == 0) "" else phase.durationSeconds.toString(),
                     onValueChange = { value ->
@@ -441,7 +425,6 @@ private fun PhaseCard(
                     singleLine = true
                 )
                 
-                // Repetitions input
                 OutlinedTextField(
                     value = if (phase.repetitions == 0) "" else phase.repetitions.toString(),
                     onValueChange = { value ->
@@ -462,7 +445,6 @@ private fun PhaseCard(
                 )
             }
             
-            // Total duration info
             Text(
                 text = stringResource(R.string.total_phase_duration, phase.totalDurationSeconds),
                 style = MaterialTheme.typography.bodySmall,
@@ -471,7 +453,6 @@ private fun PhaseCard(
         }
     }
     
-    // Delete confirmation dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },

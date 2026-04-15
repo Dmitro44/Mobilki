@@ -54,7 +54,6 @@ class SettingsViewModel(
     fun setLanguage(context: Context, language: Language, onLanguageApplied: () -> Unit) {
         viewModelScope.launch {
             repository.setLanguage(language)
-            // Apply language immediately
             LocaleHelper.setLocale(context, language)
             onLanguageApplied()
         }

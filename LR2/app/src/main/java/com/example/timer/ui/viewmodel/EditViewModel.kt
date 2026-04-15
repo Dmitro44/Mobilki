@@ -17,20 +17,16 @@ class EditViewModel(
     private val repository: TimerRepository
 ) : ViewModel() {
     
-    // UI State for the edit screen
     private val _uiState = MutableStateFlow(EditUiState())
     val uiState: StateFlow<EditUiState> = _uiState.asStateFlow()
     
-    // Track if we're in edit mode (vs create mode)
     private var editingSequenceId: Long? = null
     
     fun loadSequence(sequenceId: Long?) {
         if (sequenceId == null || sequenceId == 0L) {
-            // Create mode - reset to defaults
             _uiState.value = EditUiState()
             editingSequenceId = null
         } else {
-            // Edit mode - load existing sequence
             editingSequenceId = sequenceId
             viewModelScope.launch {
                 val sequence = repository.getSequenceById(sequenceId)
@@ -65,7 +61,7 @@ class EditViewModel(
     ) {
         _uiState.update { currentState ->
             val newPhase = TimerPhaseModel(
-                id = 0, // Will be assigned by database
+                id = 0,
                 sequenceId = editingSequenceId ?: 0,
                 phaseType = phaseType,
                 durationSeconds = durationSeconds,

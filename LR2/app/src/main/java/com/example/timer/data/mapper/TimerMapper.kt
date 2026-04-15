@@ -10,8 +10,6 @@ import com.example.timer.domain.model.TimerPhaseModel
 import com.example.timer.domain.model.TimerSequenceModel
 
 
-// TimerSequence Entity <-> Domain Model
-
 fun TimerSequence.toModel(phases: List<TimerPhaseModel> = emptyList()): TimerSequenceModel {
     return TimerSequenceModel(
         id = id,
@@ -32,8 +30,6 @@ fun TimerSequenceModel.toEntity(): TimerSequence {
         updatedAt = updatedAt
     )
 }
-
-// TimerPhase Entity <-> Domain Model
 
 fun TimerPhase.toModel(): TimerPhaseModel {
     return TimerPhaseModel(
@@ -57,15 +53,11 @@ fun TimerPhaseModel.toEntity(): TimerPhase {
     )
 }
 
-// TimerSequenceWithPhases Relation -> Domain Model
-
 fun TimerSequenceWithPhases.toModel(): TimerSequenceModel {
     return sequence.toModel(
         phases = phases.map { it.toModel() }
     )
 }
-
-// List mappers
 
 fun List<TimerSequence>.toModelList(phasesMap: Map<Long, List<TimerPhaseModel>> = emptyMap()): List<TimerSequenceModel> {
     return map { sequence ->

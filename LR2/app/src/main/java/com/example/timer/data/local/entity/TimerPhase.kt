@@ -6,9 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/**
- * Room entity representing a phase within a timer sequence
- */
 @Entity(
     tableName = "timer_phases",
     foreignKeys = [
@@ -29,7 +26,7 @@ data class TimerPhase(
     val sequenceId: Long,
     
     @ColumnInfo(name = "phase_type")
-    val phaseType: String, // WARMUP, WORK, REST, COOLDOWN
+    val phaseType: String,
     
     @ColumnInfo(name = "duration_seconds")
     val durationSeconds: Int,

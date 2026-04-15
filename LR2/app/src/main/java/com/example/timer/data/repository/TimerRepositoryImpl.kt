@@ -27,10 +27,8 @@ class TimerRepositoryImpl(
     }
     
     override suspend fun insertSequence(sequence: TimerSequenceModel): Long {
-        // Insert the sequence first
         val sequenceId = sequenceDao.insert(sequence.toEntity())
         
-        // Then insert all phases with the correct sequenceId
         if (sequence.phases.isNotEmpty()) {
             val phasesWithSequenceId = sequence.phases.map { phase ->
                 phase.copy(sequenceId = sequenceId).toEntity()
@@ -42,13 +40,11 @@ class TimerRepositoryImpl(
     }
     
     override suspend fun updateSequence(sequence: TimerSequenceModel) {
-        // Update the sequence
         val updatedSequence = sequence.toEntity().copy(
             updatedAt = System.currentTimeMillis()
         )
         sequenceDao.update(updatedSequence)
         
-        // Delete existing phases and insert new ones
         phaseDao.deleteBySequenceId(sequence.id)
         if (sequence.phases.isNotEmpty()) {
             val phases = sequence.phases.map { it.toEntity() }
@@ -58,7 +54,6 @@ class TimerRepositoryImpl(
     
     override suspend fun deleteSequence(sequence: TimerSequenceModel) {
         sequenceDao.delete(sequence.toEntity())
-        // Phases are cascade deleted via foreign key constraint
     }
     
     override suspend fun deleteSequenceById(id: Long) {
@@ -70,7 +65,6 @@ class TimerRepositoryImpl(
     
     override suspend fun deleteAllSequences() {
         sequenceDao.deleteAll()
-        // Phases are cascade deleted via foreign key constraint
     }
     
     override suspend fun getSequenceCount(): Int {

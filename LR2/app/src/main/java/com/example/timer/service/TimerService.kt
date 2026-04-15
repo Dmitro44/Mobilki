@@ -31,44 +31,31 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-/**
- * Foreground service that manages timer countdown and playback
- */
 class TimerService : Service() {
     
-    // Repository and notification helpers
     private lateinit var repository: TimerRepository
     private lateinit var notificationHelper: TimerNotificationHelper
     
-    // Coroutine scope for async operations
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
     
-    // Current sequence and phases
     private var currentSequence: TimerSequenceModel? = null
     private var currentPhasesList: List<TimerPhaseModel> = emptyList()
     
-    // Timer state tracking
     private var currentPhaseIndex = 0
     private var currentRepetitionIndex = 0
     private var currentPhaseRemainingSeconds = 0
     
-    // CountDownTimer for ticking
     private var countDownTimer: CountDownTimer? = null
     
-    // Sound feedback
     private var toneGenerator: ToneGenerator? = null
     private var mediaPlayer: MediaPlayer? = null
     
     companion object {
         private const val TAG = "TimerService"
         
-        // Singleton state flow - accessible by ViewModels
         private val _timerState = MutableStateFlow(TimerState.Idle)
         val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
         
-        /**
-         * Check if timer is currently active
-         */
         fun isActive(): Boolean {
             return _timerState.value.playbackState == PlaybackState.RUNNING ||
                    _timerState.value.playbackState == PlaybackState.PAUSED
@@ -87,17 +74,14 @@ class TimerService : Service() {
         super.onCreate()
         Log.d(TAG, "Service created")
         
-        // Initialize repository
         val database = AppDatabase.getInstance(this)
         repository = TimerRepositoryImpl(
             database.timerSequenceDao(),
             database.timerPhaseDao()
         )
         
-        // Initialize notification helper
         notificationHelper = TimerNotificationHelper(this)
         
-        // Initialize tone generator for beep sounds
         try {
             toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80)
         } catch (e: Exception) {
@@ -108,23 +92,20 @@ class TimerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.getTimerAction()
         
-        // Extract and handle timer action
         if (action != null) {
             handleAction(action)
         }
         
-        return START_NOT_STICKY // Don't restart if killed
+        return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        // This is a started service, not bound
         return null
     }
 
     override fun onDestroy() {
         super.onDestroy()
         
-        // Clean up resources
         stopTimer()
         toneGenerator?.release()
         toneGenerator = null
@@ -133,9 +114,6 @@ class TimerService : Service() {
         serviceScope.cancel()
     }
 
-    /**
-     * Handle incoming timer actions
-     */
     private fun handleAction(action: TimerAction) {
         when (action) {
             is TimerAction.Start -> startSequence(action.sequenceId)
@@ -147,9 +125,6 @@ class TimerService : Service() {
         }
     }
     
-    /**
-     * Start a new timer sequence
-     */
     private fun startSequence(sequenceId: Long) {
         serviceScope.launch {
             try {
@@ -158,7 +133,6 @@ class TimerService : Service() {
                     stopCountdown()
                 }
                 
-                // Load sequence from repository
                 val sequence = repository.getSequenceById(sequenceId)
                 
                 if (sequence == null || sequence.phases.isEmpty()) {
@@ -167,19 +141,15 @@ class TimerService : Service() {
                     return@launch
                 }
                 
-                // Store sequence data
                 currentSequence = sequence
                 currentPhasesList = sequence.phases.sortedBy { it.order }
                 
-                // Reset state
                 currentPhaseIndex = 0
                 currentRepetitionIndex = 0
                 
-                // Initialize first phase
                 val firstPhase = currentPhasesList[0]
                 currentPhaseRemainingSeconds = firstPhase.durationSeconds
                 
-                // Update state to running
                 updateState(
                     playbackState = PlaybackState.RUNNING,
                     sequenceId = sequence.id,
@@ -194,10 +164,8 @@ class TimerService : Service() {
                     phaseDurationSeconds = firstPhase.durationSeconds
                 )
                 
-                // Start foreground service
                 startForegroundService()
                 
-                // Start countdown
                 startCountdown()
                 
             } catch (e: Exception) {
@@ -207,69 +175,51 @@ class TimerService : Service() {
         }
     }
     
-    /**
-     * Start the countdown timer
-     */
     private fun startCountdown() {
-        stopCountdown() // Stop any existing timer
+        stopCountdown()
         
-        // Create countdown timer (total time + buffer, tick every second)
         countDownTimer = object : CountDownTimer(
-            (currentPhaseRemainingSeconds * 1000L) + 500, // Add buffer
-            1000L // Tick every second
+            (currentPhaseRemainingSeconds * 1000L) + 500,
+            1000L
         ) {
             override fun onTick(millisUntilFinished: Long) {
                 currentPhaseRemainingSeconds = (millisUntilFinished / 1000).toInt()
                 
-                // Update state with new time
                 updateStateTime(
                     remainingSeconds = currentPhaseRemainingSeconds
                 )
             }
             
             override fun onFinish() {
-                // Phase completed
                 onPhaseComplete()
             }
         }.start()
     }
     
-    /**
-     * Stop the countdown timer
-     */
     private fun stopCountdown() {
         countDownTimer?.cancel()
         countDownTimer = null
     }
     
-    /**
-     * Handle phase completion
-     */
     private fun onPhaseComplete() {
         Log.d(TAG, "Phase complete: phase=$currentPhaseIndex, rep=$currentRepetitionIndex")
         
-        // Play completion sound
         playBeep()
         
         val currentPhase = currentPhasesList.getOrNull(currentPhaseIndex) ?: return
         
-        // Check if we need to repeat the current phase
         if (currentRepetitionIndex < currentPhase.repetitions - 1) {
-            // Move to next repetition
             currentRepetitionIndex++
             currentPhaseRemainingSeconds = currentPhase.durationSeconds
             
-            // Update state
             updateState(
                 playbackState = PlaybackState.RUNNING,
                 currentRepetitionIndex = currentRepetitionIndex,
                 remainingSeconds = currentPhaseRemainingSeconds
             )
             
-            // Restart countdown
             startCountdown()
         } else {
-            // Move to next phase
             if (currentPhaseIndex < currentPhasesList.size - 1) {
                 currentPhaseIndex++
                 currentRepetitionIndex = 0
@@ -277,7 +227,6 @@ class TimerService : Service() {
                 val nextPhase = currentPhasesList[currentPhaseIndex]
                 currentPhaseRemainingSeconds = nextPhase.durationSeconds
                 
-                // Update state with new phase
                 updateState(
                     playbackState = PlaybackState.RUNNING,
                     currentPhaseIndex = currentPhaseIndex,
@@ -288,43 +237,32 @@ class TimerService : Service() {
                     phaseDurationSeconds = nextPhase.durationSeconds
                 )
                 
-                // Restart countdown
                 startCountdown()
             } else {
-                // All phases completed
                 onSequenceComplete()
             }
         }
     }
     
-    /**
-     * Handle sequence completion
-     */
     private fun onSequenceComplete() {
         Log.d(TAG, "Sequence completed")
         
-        // Play completion sound
         playBeep()
-        playBeep() // Double beep for completion
+        playBeep()
         
-        // Update state to completed
         updateState(
             playbackState = PlaybackState.COMPLETED,
             remainingSeconds = 0
         )
         
-        // Stop foreground after delay to show completion
         serviceScope.launch {
-            kotlinx.coroutines.delay(3000) // Show completed state for 3 seconds
+            kotlinx.coroutines.delay(3000)
             if (_timerState.value.playbackState == PlaybackState.COMPLETED) {
                 stopSelf()
             }
         }
     }
     
-    /**
-     * Pause the timer
-     */
     private fun pauseTimer() {
         if (_timerState.value.playbackState != PlaybackState.RUNNING) return
         
@@ -334,9 +272,6 @@ class TimerService : Service() {
         updateState(playbackState = PlaybackState.PAUSED)
     }
     
-    /**
-     * Resume the timer
-     */
     private fun resumeTimer() {
         if (_timerState.value.playbackState != PlaybackState.PAUSED) return
         
@@ -346,9 +281,6 @@ class TimerService : Service() {
         startCountdown()
     }
     
-    /**
-     * Stop the timer and reset state
-     */
     private fun stopTimer() {
         Log.d(TAG, "Timer stopped")
         
@@ -373,9 +305,6 @@ class TimerService : Service() {
         stopSelf()
     }
     
-    /**
-     * Skip to next phase/repetition
-     */
     private fun skipNext() {
         if (_timerState.value.playbackState == PlaybackState.IDLE) return
         
@@ -384,7 +313,6 @@ class TimerService : Service() {
         
         stopCountdown()
         
-        // Check if we can move to next repetition
         if (currentRepetitionIndex < currentPhase.repetitions - 1) {
             currentRepetitionIndex++
             currentPhaseRemainingSeconds = currentPhase.durationSeconds
@@ -397,7 +325,6 @@ class TimerService : Service() {
             
             if (wasRunning) startCountdown()
         } else if (currentPhaseIndex < currentPhasesList.size - 1) {
-            // Move to next phase
             currentPhaseIndex++
             currentRepetitionIndex = 0
             
@@ -416,15 +343,11 @@ class TimerService : Service() {
             
             if (wasRunning) startCountdown()
         } else {
-            // Last phase and last repetition - complete sequence
             Log.d(TAG, "Skipping last phase/repetition - completing sequence")
             onSequenceComplete()
         }
     }
     
-    /**
-     * Skip to previous phase/repetition
-     */
     private fun skipPrevious() {
         if (_timerState.value.playbackState == PlaybackState.IDLE) return
         
@@ -433,7 +356,6 @@ class TimerService : Service() {
         
         stopCountdown()
         
-        // Check if we can move to previous repetition
         if (currentRepetitionIndex > 0) {
             currentRepetitionIndex--
             currentPhaseRemainingSeconds = currentPhase.durationSeconds
@@ -446,11 +368,10 @@ class TimerService : Service() {
             
             if (wasRunning) startCountdown()
         } else if (currentPhaseIndex > 0) {
-            // Move to previous phase
             currentPhaseIndex--
             
             val prevPhase = currentPhasesList[currentPhaseIndex]
-            currentRepetitionIndex = prevPhase.repetitions - 1 // Go to last repetition
+            currentRepetitionIndex = prevPhase.repetitions - 1
             currentPhaseRemainingSeconds = prevPhase.durationSeconds
             
             updateState(
@@ -465,14 +386,10 @@ class TimerService : Service() {
             
             if (wasRunning) startCountdown()
         } else {
-            // Already at first phase/rep
             Log.d(TAG, "Already at first phase/repetition")
         }
     }
     
-    /**
-     * Update the full timer state
-     */
     private fun updateState(
         playbackState: PlaybackState = _timerState.value.playbackState,
         sequenceId: Long = _timerState.value.sequenceId,
@@ -502,15 +419,11 @@ class TimerService : Service() {
         
         _timerState.value = newState
         
-        // Update standard notification
         if (playbackState != PlaybackState.IDLE) {
             notificationHelper.updateNotification(newState)
         }
     }
     
-    /**
-     * Update only time-related state fields (for efficiency during ticking)
-     */
     private fun updateStateTime(
         remainingSeconds: Int
     ) {
@@ -518,13 +431,9 @@ class TimerService : Service() {
             remainingSeconds = remainingSeconds
         )
         
-        // Update standard notification less frequently (every 1 second is fine)
         notificationHelper.updateNotification(_timerState.value)
     }
     
-    /**
-     * Start service in foreground with notification
-     */
     private fun startForegroundService() {
         val notification = notificationHelper.buildNotification(_timerState.value)
         
@@ -539,12 +448,8 @@ class TimerService : Service() {
         }
     }
     
-    /**
-     * Play a beep sound for phase completion
-     */
     private fun playBeep() {
         try {
-            // Try playing custom sound first
             if (mediaPlayer == null) {
                 mediaPlayer = MediaPlayer.create(this, R.raw.taco_bell_bong_sfx)
             }
@@ -558,7 +463,6 @@ class TimerService : Service() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to play custom sound", e)
-            // Fallback to basic beep only if custom sound fails
             try {
                 toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 200)
             } catch (inner: Exception) {

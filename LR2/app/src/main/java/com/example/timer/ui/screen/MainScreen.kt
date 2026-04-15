@@ -159,7 +159,6 @@ private fun SequenceCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Color indicator
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -169,7 +168,6 @@ private fun SequenceCard(
             
             Spacer(modifier = Modifier.width(16.dp))
             
-            // Sequence info
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -190,12 +188,10 @@ private fun SequenceCard(
             
             Spacer(modifier = Modifier.width(8.dp))
             
-            // Action buttons
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Play button
                 FilledTonalIconButton(
                     onClick = onPlayClick,
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
@@ -209,7 +205,6 @@ private fun SequenceCard(
                     )
                 }
                 
-                // Edit button
                 FilledTonalIconButton(
                     onClick = onEditClick,
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
@@ -223,7 +218,6 @@ private fun SequenceCard(
                     )
                 }
                 
-                // Delete button
                 FilledTonalIconButton(
                     onClick = { showDeleteDialog = true },
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
@@ -240,7 +234,6 @@ private fun SequenceCard(
         }
     }
     
-    // Delete confirmation dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },

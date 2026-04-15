@@ -10,14 +10,7 @@ import androidx.core.os.LocaleListCompat
 import com.example.timer.data.local.preferences.Language
 import java.util.Locale
 
-/**
- * Helper object for managing application locale
- */
 object LocaleHelper {
-    /**
-     * Set the application language
-     * Uses AppCompatDelegate for backward compatibility and Android 13+ LocaleManager
-     */
     fun setLocale(context: Context, language: Language) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val localeManager = context.getSystemService(Context.LOCALE_SERVICE) as LocaleManager
@@ -28,10 +21,6 @@ object LocaleHelper {
         }
     }
 
-    /**
-     * Wrap context with the selected locale configuration
-     * This ensures that resources are loaded with the correct locale
-     */
     fun wrapContext(context: Context, language: Language): Context {
         val locale = Locale.forLanguageTag(language.code)
         Locale.setDefault(locale)
@@ -47,9 +36,6 @@ object LocaleHelper {
         return context.createConfigurationContext(config)
     }
 
-    /**
-     * Get current application locale code
-     */
     fun getCurrentLocaleCode(context: Context): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val localeManager = context.getSystemService(Context.LOCALE_SERVICE) as LocaleManager

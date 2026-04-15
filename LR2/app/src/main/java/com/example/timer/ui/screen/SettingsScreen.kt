@@ -293,7 +293,7 @@ private fun FontSizeSelector(
                     
                     RadioButton(
                         selected = fontSize == selectedFontSize,
-                        onClick = null // Handled by Card selectable
+                        onClick = null
                     )
                 }
             }
@@ -352,7 +352,7 @@ private fun LanguageSelector(
                     
                     RadioButton(
                         selected = language == selectedLanguage,
-                        onClick = null // Handled by Card selectable
+                        onClick = null
                     )
                 }
             }

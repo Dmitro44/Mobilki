@@ -14,25 +14,10 @@ import com.example.timer.ui.viewmodel.MainViewModel
 import com.example.timer.ui.viewmodel.SettingsViewModel
 import com.example.timer.ui.viewmodel.TimerViewModel
 
-/**
- * ViewModelProvider.Factory for manual dependency injection
- * 
- * Responsibilities:
- * - Creates ViewModels with required dependencies
- * - Manages repository instantiation using AppDatabase singleton
- * - Provides type-safe ViewModel creation
- * 
- * Usage:
- * ```
- * val factory = ViewModelFactory(context)
- * val viewModel: MainViewModel by viewModels { factory }
- * ```
- */
 class ViewModelFactory(
     private val context: Context
 ) : ViewModelProvider.Factory {
     
-    // Lazy initialization of repositories
     private val timerRepository: TimerRepository by lazy {
         val database = AppDatabase.getInstance(context)
         TimerRepositoryImpl(

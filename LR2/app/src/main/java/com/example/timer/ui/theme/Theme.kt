@@ -185,9 +185,6 @@ fun TimerTheme(
     )
 }
 
-/**
- * Convenience overload that accepts FontSize enum
- */
 @Composable
 fun TimerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

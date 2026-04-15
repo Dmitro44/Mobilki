@@ -24,7 +24,6 @@ fun SplashScreen(
     onNavigateToMain: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animation values
     val infiniteTransition = rememberInfiniteTransition(label = "splash_animation")
     
     val scale by infiniteTransition.animateFloat(
@@ -43,9 +42,8 @@ fun SplashScreen(
         label = "alpha_animation"
     )
     
-    // Navigate to main screen after delay
     LaunchedEffect(Unit) {
-        delay(1000) // Reduced to 1 second splash duration
+        delay(1000)
         onNavigateToMain()
     }
     

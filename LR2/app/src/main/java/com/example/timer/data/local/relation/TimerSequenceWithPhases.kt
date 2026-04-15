@@ -5,10 +5,6 @@ import androidx.room.Relation
 import com.example.timer.data.local.entity.TimerPhase
 import com.example.timer.data.local.entity.TimerSequence
 
-/**
- * Room relation class that joins TimerSequence with its TimerPhases
- * Used for @Transaction queries that fetch a sequence with all its phases
- */
 data class TimerSequenceWithPhases(
     @Embedded
     val sequence: TimerSequence,

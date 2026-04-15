@@ -31,9 +31,6 @@ import com.example.timer.service.TimerState
 import com.example.timer.ui.util.TimerServiceHelper
 import com.example.timer.ui.viewmodel.TimerViewModel
 
-/**
- * Timer screen displaying countdown and controls
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
@@ -62,10 +59,9 @@ fun TimerScreen(
         }
     }
     
-    // Navigate back when timer completes or is stopped
     LaunchedEffect(timerState.playbackState) {
         if (timerState.playbackState == PlaybackState.COMPLETED) {
-            kotlinx.coroutines.delay(2000) // Show completed state briefly
+            kotlinx.coroutines.delay(2000)
             onNavigateBack()
         }
     }
@@ -107,7 +103,6 @@ fun TimerScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top section: Phase info
             PhaseInfoSection(
                 timerState = timerState,
                 modifier = Modifier
@@ -115,7 +110,6 @@ fun TimerScreen(
                     .padding(24.dp)
             )
             
-            // Middle section: Timer display
             TimerDisplaySection(
                 timerState = timerState,
                 modifier = Modifier
@@ -123,7 +117,6 @@ fun TimerScreen(
                     .fillMaxWidth()
             )
 
-            // Queue section: Next phases
             if (timerState.allPhases.isNotEmpty()) {
                 PhaseQueueSection(
                     timerState = timerState,
@@ -133,7 +126,6 @@ fun TimerScreen(
                 )
             }
             
-            // Bottom section: Controls
             ControlsSection(
                 timerState = timerState,
                 onPlayPauseClick = {
@@ -157,9 +149,6 @@ fun TimerScreen(
     }
 }
 
-/**
- * Phase information section
- */
 @Composable
 private fun PhaseInfoSection(
     timerState: TimerState,
@@ -179,7 +168,6 @@ private fun PhaseInfoSection(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Phase type badge
             Surface(
                 shape = RoundedCornerShape(8.dp),
                 color = getPhaseColor(timerState.currentPhaseType)
@@ -194,7 +182,6 @@ private fun PhaseInfoSection(
                 )
             }
             
-            // Phase and repetition info
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -211,9 +198,6 @@ private fun PhaseInfoSection(
     }
 }
 
-/**
- * Small info chip
- */
 @Composable
 private fun InfoChip(
     label: String,
@@ -244,9 +228,6 @@ private fun InfoChip(
     }
 }
 
-/**
- * Timer display with progress rings
- */
 @Composable
 private fun TimerDisplaySection(
     timerState: TimerState,
@@ -278,9 +259,6 @@ private fun TimerDisplaySection(
     }
 }
 
-/**
- * Control buttons section
- */
 @Composable
 private fun ControlsSection(
     timerState: TimerState,
@@ -295,12 +273,10 @@ private fun ControlsSection(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Main play/pause button
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Skip Previous
             FilledTonalIconButton(
                 onClick = onSkipPreviousClick,
                 modifier = Modifier.size(56.dp),
@@ -313,7 +289,6 @@ private fun ControlsSection(
                 )
             }
             
-            // Play/Pause
             FloatingActionButton(
                 onClick = onPlayPauseClick,
                 modifier = Modifier.size(72.dp),
@@ -334,7 +309,6 @@ private fun ControlsSection(
                 )
             }
             
-            // Skip Next
             FilledTonalIconButton(
                 onClick = onSkipNextClick,
                 modifier = Modifier.size(56.dp),
@@ -348,7 +322,6 @@ private fun ControlsSection(
             }
         }
         
-        // Stop button
         OutlinedButton(
             onClick = onStopClick,
             colors = ButtonDefaults.outlinedButtonColors(
@@ -372,7 +345,6 @@ private fun PhaseQueueSection(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    // Generate a list of all individual steps (phase index + repetition index)
     val queueItems = remember(timerState.allPhases) {
         timerState.allPhases.flatMapIndexed { phaseIndex, phase ->
             (0 until phase.repetitions).map { repIndex ->
@@ -381,7 +353,6 @@ private fun PhaseQueueSection(
         }
     }
 
-    // Find the current global index in the flattened list
     val currentGlobalIndex = queueItems.indexOfFirst { 
         it.first == timerState.currentPhaseIndex && it.second == timerState.currentRepetitionIndex 
     }
@@ -442,7 +413,6 @@ private fun PhaseQueueSection(
                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                             maxLines = 1
                         )
-                        // Show which repetition it is if more than 1
                         Text(
                             text = if (phase.repetitions > 1) {
                                 "${repIndex + 1}/${phase.repetitions} • " + 
@@ -463,22 +433,16 @@ private fun PhaseQueueSection(
     }
 }
 
-/**
- * Get color for phase type
- */
 @Composable
 private fun getPhaseColor(phaseType: PhaseType): Color {
     return when (phaseType) {
-        PhaseType.WARMUP -> Color(0xFFFFA726) // Orange
-        PhaseType.WORK -> Color(0xFFEF5350) // Red
-        PhaseType.REST -> Color(0xFF42A5F5) // Blue
-        PhaseType.COOLDOWN -> Color(0xFF66BB6A) // Green
+        PhaseType.WARMUP -> Color(0xFFFFA726)
+        PhaseType.WORK -> Color(0xFFEF5350)
+        PhaseType.REST -> Color(0xFF42A5F5)
+        PhaseType.COOLDOWN -> Color(0xFF66BB6A)
     }
 }
 
-/**
- * Get text description of playback state
- */
 @Composable
 private fun getPlaybackStateText(state: PlaybackState): String {
     return when (state) {

@@ -19,16 +19,6 @@ import com.example.timer.ui.viewmodel.MainViewModel
 import com.example.timer.ui.viewmodel.SettingsViewModel
 import com.example.timer.ui.viewmodel.TimerViewModel
 
-/**
- * Main navigation host for the Timer application
- * 
- * Defines the navigation graph and handles screen composition
- * Uses Jetpack Compose Navigation for declarative routing
- * 
- * @param navController Navigation controller for managing navigation
- * @param viewModelFactory Factory for creating ViewModels with dependencies
- * @param modifier Optional modifier for the NavHost
- */
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -42,7 +32,6 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // Splash screen - initial app screen
         composable(route = Routes.Splash.route) {
             SplashScreen(
                 onNavigateToMain = {
@@ -54,7 +43,6 @@ fun AppNavHost(
             )
         }
         
-        // Main screen - list of timer sequences
         composable(route = Routes.Main.route) {
             val mainViewModel: MainViewModel = viewModel(factory = viewModelFactory)
             
@@ -62,7 +50,6 @@ fun AppNavHost(
                 viewModel = mainViewModel,
                 onNavigateToTimer = { sequenceId ->
                     navController.navigate(Routes.Timer.createRoute(sequenceId)) {
-                        // Ensure back navigation doesn't accidentally hit Splash
                         popUpTo(Routes.Main.route) { inclusive = false }
                     }
                 },
@@ -78,7 +65,6 @@ fun AppNavHost(
             )
         }
         
-        // Timer screen - countdown and controls
         composable(
             route = Routes.Timer.route,
             arguments = listOf(
@@ -103,7 +89,6 @@ fun AppNavHost(
             )
         }
         
-        // Edit screen - create or edit a sequence
         composable(
             route = Routes.Edit.route,
             arguments = listOf(
@@ -127,7 +112,6 @@ fun AppNavHost(
             )
         }
         
-        // Settings screen - user preferences
         composable(route = Routes.Settings.route) {
             val settingsViewModel: SettingsViewModel = viewModel(factory = viewModelFactory)
             

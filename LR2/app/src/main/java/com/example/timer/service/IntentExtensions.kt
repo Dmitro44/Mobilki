@@ -2,16 +2,6 @@ package com.example.timer.service
 
 import android.content.Intent
 
-/**
- * Extension functions for working with TimerAction and Intent
- * Provides type-safe serialization/deserialization of service commands
- */
-
-/**
- * Put a TimerAction into this Intent's extras
- * @param action The action to serialize
- * @return This Intent for chaining
- */
 fun Intent.putTimerAction(action: TimerAction): Intent {
     when (action) {
         is TimerAction.Start -> {
@@ -37,10 +27,6 @@ fun Intent.putTimerAction(action: TimerAction): Intent {
     return this
 }
 
-/**
- * Extract a TimerAction from this Intent's extras
- * @return The deserialized TimerAction, or null if not found or invalid
- */
 fun Intent.getTimerAction(): TimerAction? {
     val actionType = getStringExtra(TimerAction.EXTRA_ACTION_TYPE) ?: return null
     
