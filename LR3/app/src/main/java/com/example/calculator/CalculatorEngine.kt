@@ -154,7 +154,11 @@ class CalculatorEngine {
             "*" -> a.multiply(b, mathContext)
             "/" -> {
                 if (b.compareTo(BigDecimal.ZERO) == 0) throw ArithmeticException("Division by zero")
-                a.divide(b, mathContext)
+                try {
+                    a.divide(b, mathContext)
+                } catch (e: ArithmeticException) {
+                    a.divide(b, MathContext.DECIMAL64)
+                }
             }
             "^" -> {
                 BigDecimal(Math.pow(a.toDouble(), b.toDouble()), mathContext)
