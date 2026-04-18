@@ -12,6 +12,9 @@ class CalculatorViewModel : ViewModel() {
     private val engine = CalculatorEngine()
 
     fun onAction(action: CalculatorAction) {
+        if (_state.value.expression == "Error" && action !is CalculatorAction.Clear) {
+            _state.update { it.copy(expression = "") }
+        }
         when (action) {
             is CalculatorAction.Number -> enterNumber(action.number)
             is CalculatorAction.Operation -> enterOperation(action.operation)
@@ -85,7 +88,7 @@ class CalculatorViewModel : ViewModel() {
     private fun calculate() {
         _state.update { state ->
             val result = engine.evaluate(state.expression)
-            if (result != "Error") state.copy(expression = result) else state
+            state.copy(expression = result)
         }
     }
 }
