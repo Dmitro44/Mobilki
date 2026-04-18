@@ -13,14 +13,17 @@ class CalculatorViewModel : ViewModel() {
 
     fun onAction(action: CalculatorAction) {
         if (_state.value.expression == "Error" && action !is CalculatorAction.Clear) {
-            _state.update { it.copy(expression = "") }
+            _state.update { it.copy(expression = "", result = "") }
+        }
+        if (_state.value.result.isNotEmpty() && action !is CalculatorAction.Calculate && action !is CalculatorAction.Clear) {
+            _state.update { it.copy(result = "") }
         }
         when (action) {
             is CalculatorAction.Number -> enterNumber(action.number)
             is CalculatorAction.Operation -> enterOperation(action.operation)
             is CalculatorAction.Decimal -> enterDecimal()
-            is CalculatorAction.Clear -> _state.update { it.copy(expression = "") }
-            is CalculatorAction.Delete -> _state.update { it.copy(expression = it.expression.dropLast(1)) }
+            is CalculatorAction.Clear -> _state.update { it.copy(expression = "", result = "") }
+            is CalculatorAction.Delete -> _state.update { it.copy(expression = it.expression.dropLast(1), result = "") }
             is CalculatorAction.Calculate -> calculate()
             is CalculatorAction.ToggleMode -> _state.update { it.copy(isEngineeringMode = !it.isEngineeringMode) }
         }
@@ -88,7 +91,7 @@ class CalculatorViewModel : ViewModel() {
     private fun calculate() {
         _state.update { state ->
             val result = engine.evaluate(state.expression)
-            state.copy(expression = result)
+            state.copy(result = result)
         }
     }
 }

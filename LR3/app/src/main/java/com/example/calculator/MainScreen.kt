@@ -46,7 +46,7 @@ fun MainScreen(
     ) {
         CalculatorDisplay(
             expression = state.expression,
-            result = "", 
+            result = state.result,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
