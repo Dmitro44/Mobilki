@@ -15,7 +15,7 @@ class CalculatorViewModel : ViewModel() {
         if (_state.value.expression == "Error" && action !is CalculatorAction.Clear) {
             _state.update { it.copy(expression = "", result = "") }
         }
-        if (_state.value.result.isNotEmpty() && action !is CalculatorAction.Calculate && action !is CalculatorAction.Clear) {
+        if (_state.value.result.isNotEmpty() && action !is CalculatorAction.Calculate && action !is CalculatorAction.Clear && action !is CalculatorAction.ToggleMode) {
             _state.update { it.copy(result = "") }
         }
         when (action) {
