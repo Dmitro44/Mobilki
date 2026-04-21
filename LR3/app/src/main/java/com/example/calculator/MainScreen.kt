@@ -15,6 +15,8 @@ import androidx.compose.material3.Text
 import com.example.calculator.ui.components.BasicPad
 import com.example.calculator.ui.components.CalculatorDisplay
 import com.example.calculator.ui.components.EngineeringPad
+import com.example.calculator.ui.components.NumberPad
+import com.example.calculator.ui.components.OperationsPad
 
 @Composable
 fun MainScreen(
@@ -58,52 +60,69 @@ fun MainScreen(
                 .fillMaxWidth()
                 .weight(if (isLandscape) 2f else 1.5f)
         ) {
-            if (isFullFlavor && isLandscape) {
-                EngineeringPad(
-                    onButtonClick = onAction,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                )
-                BasicPad(
-                    onButtonClick = onAction,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                )
-            } else if (isFullFlavor && !isLandscape) {
+            if (isFullFlavor) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = { viewModel.onAction(CalculatorAction.ToggleMode) },
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                    if (!isLandscape) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
                         ) {
-                            Text(if (state.isEngineeringMode) "Hide Engineering" else "Show Engineering")
+                            TextButton(
+                                onClick = { viewModel.onAction(CalculatorAction.ToggleMode) },
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Text(if (state.isEngineeringMode) "Hide Engineering" else "Show Engineering")
+                            }
                         }
                     }
-                    if (state.isEngineeringMode) {
-                        EngineeringPad(
-                            onButtonClick = onAction,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(0.2f)
-                        )
-                        BasicPad(
-                            onButtonClick = onAction,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        )
+                    
+                    if (isLandscape) {
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            Row(modifier = Modifier.weight(0.6f).fillMaxHeight()) {
+                                EngineeringPad(
+                                    onButtonClick = onAction,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    isLandscape = true
+                                )
+                                OperationsPad(
+                                    onButtonClick = onAction,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                )
+                            }
+                            NumberPad(
+                                onButtonClick = onAction,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                            )
+                        }
                     } else {
-                        BasicPad(
-                            onButtonClick = onAction,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        )
+                        if (state.isEngineeringMode) {
+                            EngineeringPad(
+                                onButtonClick = onAction,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.2f),
+                                isLandscape = false
+                            )
+                            BasicPad(
+                                onButtonClick = onAction,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            )
+                        } else {
+                            BasicPad(
+                                onButtonClick = onAction,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            )
+                        }
                     }
                 }
             } else {
