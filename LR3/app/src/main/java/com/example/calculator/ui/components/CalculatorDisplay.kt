@@ -21,7 +21,8 @@ import com.example.calculator.ui.theme.CalculatorTheme
 fun CalculatorDisplay(
     expression: String,
     result: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLandscape: Boolean = false
 ) {
     val expressionScrollState = rememberScrollState()
     val resultScrollState = rememberScrollState()
@@ -37,12 +38,12 @@ fun CalculatorDisplay(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(if (isLandscape) 8.dp else 24.dp),
             horizontalAlignment = Alignment.End
         ) {
             Text(
                 text = expression,
-                style = MaterialTheme.typography.headlineMedium,
+                style = if (isLandscape) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.End,
                 modifier = Modifier
@@ -51,7 +52,7 @@ fun CalculatorDisplay(
             )
             Text(
                 text = result,
-                style = MaterialTheme.typography.displaySmall,
+                style = if (isLandscape) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.End,
                 modifier = Modifier

@@ -49,10 +49,11 @@ fun MainScreen(
         CalculatorDisplay(
             expression = state.expression,
             result = state.result,
+            isLandscape = isLandscape,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(16.dp)
+                .padding(if (isLandscape) 8.dp else 16.dp)
         )
 
         Row(
