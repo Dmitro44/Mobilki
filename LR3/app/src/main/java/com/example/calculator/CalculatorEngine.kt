@@ -140,7 +140,7 @@ class CalculatorEngine {
         if (op == "√") {
             if (values.isEmpty()) throw IllegalArgumentException("Invalid syntax")
             val a = values.pop()
-            val result = BigDecimal(Math.sqrt(a.toDouble()), mathContext)
+            val result = bigDecimalSqrt(a, mathContext ?: MathContext.UNLIMITED)
             values.push(result)
             return
         }
@@ -173,6 +173,47 @@ class CalculatorEngine {
             else -> throw IllegalArgumentException("Unknown operator: $op")
         }
         values.push(res)
+    }
+
+    private fun bigDecimalSqrt(n: BigDecimal, mc: MathContext): BigDecimal {
+        if (n < BigDecimal.ZERO) throw ArithmeticException("Square root of a negative number")
+        if (n.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO
+
+        val doubleVal = n.toDouble()
+        var x = if (doubleVal.isInfinite() || doubleVal.isNaN()) {
+            try {
+                n.divide(BigDecimal.valueOf(2), mc)
+            } catch (e: ArithmeticException) {
+                n.divide(BigDecimal.valueOf(2), MathContext.DECIMAL64)
+            }
+        } else {
+            BigDecimal(Math.sqrt(doubleVal))
+        }
+
+        val two = BigDecimal.valueOf(2)
+        val maxIterations = 100
+        val precision = if (mc.precision > 0) mc.precision else 15
+        val epsilon = BigDecimal.ONE.movePointLeft(precision)
+
+        for (i in 0 until maxIterations) {
+            val nDivX = try {
+                n.divide(x, mc)
+            } catch (e: ArithmeticException) {
+                n.divide(x, MathContext.DECIMAL64)
+            }
+            
+            val next = try {
+                nDivX.add(x, mc).divide(two, mc)
+            } catch (e: ArithmeticException) {
+                nDivX.add(x, mc).divide(two, MathContext.DECIMAL64)
+            }
+
+            if (x.subtract(next).abs() < epsilon || x.compareTo(next) == 0) {
+                return next
+            }
+            x = next
+        }
+        return x
     }
 
     private fun factorial(n: BigDecimal): BigDecimal {

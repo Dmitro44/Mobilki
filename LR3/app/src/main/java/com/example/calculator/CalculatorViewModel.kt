@@ -32,7 +32,7 @@ class CalculatorViewModel : ViewModel() {
     private fun enterNumber(number: Int) {
         _state.update { state ->
             val expr = state.expression
-            if (expr.length >= 25) return@update state
+            if (expr.length >= 200) return@update state
             state.copy(expression = expr + number)
         }
     }
