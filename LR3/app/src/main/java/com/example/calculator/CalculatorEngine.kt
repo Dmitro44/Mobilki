@@ -3,6 +3,7 @@ package com.example.calculator
 import java.math.BigDecimal
 import java.math.MathContext
 import java.util.Stack
+import kotlin.math.pow
 
 class CalculatorEngine {
     val mathContext: MathContext? = MathContext.UNLIMITED
@@ -161,7 +162,13 @@ class CalculatorEngine {
                 }
             }
             "^" -> {
-                BigDecimal(Math.pow(a.toDouble(), b.toDouble()), mathContext)
+                val bInt = b.toInt()
+                if (b.compareTo(BigDecimal(bInt)) == 0) {
+                    if (bInt >= 0) a.pow(bInt, mathContext)
+                    else BigDecimal.ONE.divide(a.pow(-bInt, mathContext), mathContext)
+                } else {
+                    BigDecimal(a.toDouble().pow(b.toDouble()), mathContext)
+                }
             }
             else -> throw IllegalArgumentException("Unknown operator: $op")
         }
