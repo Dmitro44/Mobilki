@@ -27,13 +27,7 @@ data class TimerState(
             String.format("%02d:%02d", minutes, seconds)
         }
     }
-    
-    fun getPhaseProgress(): Float {
-        if (phaseDurationSeconds <= 0) return 0f
-        val elapsed = phaseDurationSeconds - remainingSeconds
-        return (elapsed.toFloat() / phaseDurationSeconds.toFloat()).coerceIn(0f, 1f)
-    }
-    
+
     fun getRepetitionDisplay(): String {
         return "${currentRepetitionIndex + 1}/$totalRepetitions"
     }

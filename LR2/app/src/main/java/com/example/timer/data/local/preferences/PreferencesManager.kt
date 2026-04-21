@@ -15,9 +15,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
     name = "user_preferences"
 )
 
-class PreferencesManager private constructor(private val context: Context) {
-    
-    private val dataStore: DataStore<Preferences> = context.dataStore
+class PreferencesManager private constructor(private val dataStore: DataStore<Preferences>) {
     
     companion object {
         private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
@@ -29,7 +27,7 @@ class PreferencesManager private constructor(private val context: Context) {
         
         fun getInstance(context: Context): PreferencesManager {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: PreferencesManager(context.applicationContext).also { INSTANCE = it }
+                INSTANCE ?: PreferencesManager(context.applicationContext.dataStore).also { INSTANCE = it }
             }
         }
     }

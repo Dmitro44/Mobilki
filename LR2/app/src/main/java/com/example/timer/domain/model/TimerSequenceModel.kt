@@ -2,6 +2,8 @@ package com.example.timer.domain.model
 
 import androidx.compose.ui.graphics.Color
 
+import java.util.Locale
+
 data class TimerSequenceModel(
     val id: Long = 0,
     val name: String,
@@ -19,9 +21,9 @@ data class TimerSequenceModel(
         val seconds = totalDurationSeconds % 60
         
         return if (hours > 0) {
-            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
         } else {
-            String.format("%02d:%02d", minutes, seconds)
+            String.format(Locale.US, "%02d:%02d", minutes, seconds)
         }
     }
     

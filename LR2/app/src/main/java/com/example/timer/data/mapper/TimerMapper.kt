@@ -59,20 +59,6 @@ fun TimerSequenceWithPhases.toModel(): TimerSequenceModel {
     )
 }
 
-fun List<TimerSequence>.toModelList(phasesMap: Map<Long, List<TimerPhaseModel>> = emptyMap()): List<TimerSequenceModel> {
-    return map { sequence ->
-        sequence.toModel(phasesMap[sequence.id] ?: emptyList())
-    }
-}
-
 fun List<TimerSequenceWithPhases>.toModelList(): List<TimerSequenceModel> {
     return map { it.toModel() }
-}
-
-fun List<TimerPhase>.toPhaseModelList(): List<TimerPhaseModel> {
-    return map { it.toModel() }
-}
-
-fun List<TimerPhaseModel>.toPhaseEntityList(): List<TimerPhase> {
-    return map { it.toEntity() }
 }

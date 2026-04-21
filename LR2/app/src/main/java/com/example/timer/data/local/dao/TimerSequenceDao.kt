@@ -26,12 +26,6 @@ interface TimerSequenceDao {
     @Query("SELECT * FROM timer_sequences WHERE id = :id")
     suspend fun getById(id: Long): TimerSequence?
     
-    @Query("SELECT * FROM timer_sequences ORDER BY updated_at DESC")
-    fun getAllFlow(): Flow<List<TimerSequence>>
-    
-    @Query("SELECT * FROM timer_sequences ORDER BY updated_at DESC")
-    suspend fun getAll(): List<TimerSequence>
-    
     @Transaction
     @Query("SELECT * FROM timer_sequences WHERE id = :id")
     suspend fun getSequenceWithPhases(id: Long): TimerSequenceWithPhases?
@@ -39,10 +33,6 @@ interface TimerSequenceDao {
     @Transaction
     @Query("SELECT * FROM timer_sequences ORDER BY updated_at DESC")
     fun getAllSequencesWithPhasesFlow(): Flow<List<TimerSequenceWithPhases>>
-    
-    @Transaction
-    @Query("SELECT * FROM timer_sequences ORDER BY updated_at DESC")
-    suspend fun getAllSequencesWithPhases(): List<TimerSequenceWithPhases>
     
     @Query("DELETE FROM timer_sequences")
     suspend fun deleteAll()

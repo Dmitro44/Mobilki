@@ -202,8 +202,6 @@ class TimerService : Service() {
     }
     
     private fun onPhaseComplete() {
-        Log.d(TAG, "Phase complete: phase=$currentPhaseIndex, rep=$currentRepetitionIndex")
-        
         playBeep()
         
         val currentPhase = currentPhasesList.getOrNull(currentPhaseIndex) ?: return
@@ -436,16 +434,12 @@ class TimerService : Service() {
     
     private fun startForegroundService() {
         val notification = notificationHelper.buildNotification(_timerState.value)
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                TimerNotificationHelper.NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-            )
-        } else {
-            startForeground(TimerNotificationHelper.NOTIFICATION_ID, notification)
-        }
+
+        startForeground(
+            TimerNotificationHelper.NOTIFICATION_ID,
+            notification,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+        )
     }
     
     private fun playBeep() {

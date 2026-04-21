@@ -5,7 +5,6 @@ import com.example.timer.data.local.dao.TimerSequenceDao
 import com.example.timer.data.mapper.toEntity
 import com.example.timer.data.mapper.toModel
 import com.example.timer.data.mapper.toModelList
-import com.example.timer.data.mapper.toPhaseEntityList
 import com.example.timer.domain.model.TimerSequenceModel
 import com.example.timer.domain.repository.TimerRepository
 import kotlinx.coroutines.flow.Flow
