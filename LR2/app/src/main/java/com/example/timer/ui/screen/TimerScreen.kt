@@ -41,18 +41,20 @@ fun TimerScreen(
 ) {
     val context = LocalContext.current
     val timerState by viewModel.timerState.collectAsStateWithLifecycle()
+    var hasObservedActiveTimer by remember(sequenceId) { mutableStateOf(false) }
     
-    LaunchedEffect(sequenceId, timerState.playbackState) {
+    LaunchedEffect(sequenceId, timerState.sequenceId, timerState.playbackState) {
         if (sequenceId <= 0) return@LaunchedEffect
-        
+
         when (timerState.playbackState) {
             PlaybackState.IDLE -> {
-                TimerServiceHelper.startTimer(context, sequenceId)
+                if (hasObservedActiveTimer) {
+                    onNavigateBack()
+                }
             }
             PlaybackState.RUNNING, PlaybackState.PAUSED -> {
-                if (timerState.sequenceId != sequenceId) {
-                    TimerServiceHelper.stopTimer(context)
-                    TimerServiceHelper.startTimer(context, sequenceId)
+                if (timerState.sequenceId == sequenceId) {
+                    hasObservedActiveTimer = true
                 }
             }
             else -> { }

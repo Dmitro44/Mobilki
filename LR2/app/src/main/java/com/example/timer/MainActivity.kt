@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     viewModelFactory = viewModelFactory,
                     startDestination = when {
-                        hasNotificationIntent -> Routes.Timer.createRoute(notificationSequenceId)
+                        hasNotificationIntent && TimerService.isActive() -> Routes.Timer.createRoute(notificationSequenceId)
                         TimerService.isActive() -> {
                             hasPassedSplash = true
                             Routes.Timer.createRoute(timerState.sequenceId)

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.timer.R
 import com.example.timer.domain.model.TimerSequenceModel
+import com.example.timer.ui.util.TimerServiceHelper
 import com.example.timer.ui.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +40,7 @@ fun MainScreen(
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val sequences by viewModel.sequences.collectAsStateWithLifecycle()
     val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
     
@@ -94,7 +97,10 @@ fun MainScreen(
         } else {
             SequenceList(
                 sequences = sequences,
-                onPlayClick = onNavigateToTimer,
+                onPlayClick = { sequenceId ->
+                    TimerServiceHelper.startTimer(context, sequenceId)
+                    onNavigateToTimer(sequenceId)
+                },
                 onEditClick = onNavigateToEdit,
                 onDeleteClick = { sequence -> viewModel.deleteSequence(sequence) },
                 modifier = Modifier
