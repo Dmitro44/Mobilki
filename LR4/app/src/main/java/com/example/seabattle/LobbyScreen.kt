@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -126,6 +127,14 @@ fun LobbyScreen(
                                 }
                             },
                             enabled = !isCurrentPlayerReady,
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = !isCurrentPlayerReady,
+                                selected = shipOrientation == ShipOrientation.HORIZONTAL,
+                                borderColor = MaterialTheme.colorScheme.outline,
+                                selectedBorderColor = MaterialTheme.colorScheme.primary,
+                                borderWidth = 1.dp,
+                                selectedBorderWidth = 3.dp,
+                            ),
                             label = { Text("Horizontal") }
                         )
                         FilterChip(
@@ -136,6 +145,14 @@ fun LobbyScreen(
                                 }
                             },
                             enabled = !isCurrentPlayerReady,
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = !isCurrentPlayerReady,
+                                selected = shipOrientation == ShipOrientation.VERTICAL,
+                                borderColor = MaterialTheme.colorScheme.outline,
+                                selectedBorderColor = MaterialTheme.colorScheme.primary,
+                                borderWidth = 1.dp,
+                                selectedBorderWidth = 3.dp,
+                            ),
                             label = { Text("Vertical") }
                         )
                     }
@@ -154,6 +171,14 @@ fun LobbyScreen(
                                         selected = currentShipSize == size,
                                         onClick = { onSelectShipSize(size) },
                                         enabled = !isCurrentPlayerReady && count > 0,
+                                        border = FilterChipDefaults.filterChipBorder(
+                                            enabled = !isCurrentPlayerReady && count > 0,
+                                            selected = currentShipSize == size,
+                                            borderColor = MaterialTheme.colorScheme.outline,
+                                            selectedBorderColor = MaterialTheme.colorScheme.primary,
+                                            borderWidth = 1.dp,
+                                            selectedBorderWidth = 3.dp,
+                                        ),
                                         modifier = Modifier
                                             .weight(1f)
                                             .widthIn(min = 0.dp),
