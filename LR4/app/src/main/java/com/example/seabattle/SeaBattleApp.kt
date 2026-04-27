@@ -50,6 +50,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.seabattle.data.AppContainer
+import com.example.seabattle.game.FleetRules
 import com.example.seabattle.model.AvatarChoice
 import com.example.seabattle.model.GameState
 import com.example.seabattle.model.GameStatus
@@ -273,11 +274,17 @@ fun SeaBattleApp() {
                 LobbyRoute(
                     appUiState = appUiState,
                     gameUiState = gameUiState,
-                    onReady = { ready ->
-                        if (ready) {
-                            appUiState.currentUserId?.let(gameViewModel::markReady)
-                        }
+                    onReadyButtonClick = {
+                        val currentUserId = appUiState.currentUserId ?: return@LobbyRoute
+                        val isCurrentlyReady = gameUiState.currentGame?.isReadyFor(currentUserId) == true
+                        gameViewModel.setReady(currentUserId, !isCurrentlyReady)
                     },
+                    onSelectShipSize = gameViewModel::selectShipSize,
+                    onToggleOrientation = gameViewModel::togglePlacementOrientation,
+                    onBoardCellClick = { row, column ->
+                        gameViewModel.placeOrRemoveShipAt(FleetRules.cellIndex(row, column))
+                    },
+                    onClearPlacementClick = gameViewModel::clearPlacement,
                     onShareCode = {
                         gameUiState.gameId.takeIf { it.isNotBlank() }?.let { gameId ->
                             shareGameCode(activity, clipboardManager, gameId)
@@ -304,7 +311,12 @@ fun SeaBattleApp() {
                         }
                     },
                     onExit = {
-                        appUiState.currentUserId?.let(gameViewModel::leaveGame)
+                        val currentGame = gameUiState.currentGame
+                        if (currentGame?.isFinished == true) {
+                            gameViewModel.clearLocalGame()
+                        } else {
+                            appUiState.currentUserId?.let(gameViewModel::leaveGame)
+                        }
                         navController.navigateSingleTop(AppRoute.Home)
                     }
                 )
@@ -507,7 +519,11 @@ private fun CreateJoinRoute(
 private fun LobbyRoute(
     appUiState: AppUiState,
     gameUiState: GameUiState,
-    onReady: (Boolean) -> Unit,
+    onReadyButtonClick: () -> Unit,
+    onSelectShipSize: (Int) -> Unit,
+    onToggleOrientation: () -> Unit,
+    onBoardCellClick: (Int, Int) -> Unit,
+    onClearPlacementClick: () -> Unit,
     onShareCode: () -> Unit,
     onLeave: () -> Unit,
 ) {
@@ -531,7 +547,15 @@ private fun LobbyRoute(
         players = game.toLobbyPlayers(),
         currentPlayerName = currentProfile.nickname,
         isCurrentPlayerReady = game.isReadyFor(currentUserId),
-        onReadyChange = onReady,
+        placedShips = gameUiState.localShips,
+        remainingShipSizes = gameUiState.remainingShipSizes,
+        selectedShipSize = gameUiState.selectedShipSize,
+        shipOrientation = gameUiState.placementOrientation,
+        onReadyButtonClick = onReadyButtonClick,
+        onSelectShipSize = onSelectShipSize,
+        onToggleOrientation = onToggleOrientation,
+        onBoardCellClick = onBoardCellClick,
+        onClearPlacementClick = onClearPlacementClick,
         onShareCodeClick = onShareCode,
         onLeaveClick = onLeave,
         isCurrentPlayerHost = game.hostUid == currentUserId,
@@ -569,12 +593,21 @@ private fun BattleRoute(
         currentTurnText = game.toTurnText(currentUserId),
         statusMessage = game.toBattleStatusMessage(currentUserId),
         onEnemyCellClick = { row, column ->
-            onFireAtCell(row * BOARD_SIZE + column)
+            onFireAtCell(row * FleetRules.BOARD_SIZE + column)
         },
+        selectedEnemyCell = gameUiState.selectedEnemyCell,
         isYourTurn = game.currentTurnUid == currentUserId && !game.isFinished && !gameUiState.isSubmittingGuestShot,
         isLoading = gameUiState.isLoading || gameUiState.isSubmittingGuestShot,
         errorMessage = gameUiState.errorMessage,
-        onFinishClick = onExit,
+        showGameResultDialog = game.isFinished,
+        gameResultTitle = if (game.winnerUid == currentUserId) "Victory" else "Defeat",
+        gameResultMessage = if (game.winnerUid == currentUserId) {
+            "You destroyed the enemy fleet. Return to the main menu."
+        } else {
+            "Your fleet has been destroyed. Return to the main menu."
+        },
+        onDismissGameResult = onExit,
+        onFinishClick = if (game.isFinished) onExit else onExit,
     )
 }
 
@@ -629,10 +662,10 @@ private fun GameState.isReadyFor(uid: String): Boolean {
 
 private fun GameState.toLobbyStatusMessage(currentUserId: String): String {
     return when {
-        guestUid.isNullOrBlank() -> "Share the game code with another player."
-        !isReadyFor(currentUserId) -> "Generate your board and mark yourself ready."
+        guestUid.isNullOrBlank() -> "Share the game code and place your ships while you wait."
+        !isReadyFor(currentUserId) -> "Place your ships and mark yourself ready."
         !canStartBattle -> "Waiting for the other player to get ready."
-        else -> "Both players are ready. Start the battle."
+        else -> "Both players are ready. Battle starts automatically."
     }
 }
 
@@ -640,8 +673,8 @@ private fun GameState.toBattleStatusMessage(currentUserId: String): String {
     return when {
         isFinished && winnerUid == currentUserId -> "You won this battle."
         isFinished -> "You lost this battle."
-        currentTurnUid == currentUserId -> "Tap a cell on the enemy board to shoot."
-        else -> "Wait for the opponent move."
+        currentTurnUid == currentUserId -> "Tap a cell on the enemy board. If you hit, you keep shooting."
+        else -> "Wait for the opponent. Their turn ends when they miss."
     }
 }
 
@@ -657,9 +690,11 @@ private fun GameState.toTurnText(currentUserId: String): String {
 private fun GameState.toOwnBoard(currentUserId: String): List<List<BoardCellState>> {
     val ownShips = if (currentUserId == hostUid) hostShips else guestShips
     val ownHitsReceived = if (currentUserId == hostUid) hostShotsReceived else guestShotsReceived
+    val sunkCells = ownShips.sunkCells(ownHitsReceived)
 
     return buildBoard { cellIndex ->
         when {
+            cellIndex in sunkCells -> BoardCellState.Sunk
             cellIndex in ownHitsReceived && ownShips.any { cellIndex in it.cells } -> BoardCellState.Hit
             cellIndex in ownHitsReceived -> BoardCellState.Miss
             ownShips.any { cellIndex in it.cells } -> BoardCellState.Ship
@@ -671,9 +706,11 @@ private fun GameState.toOwnBoard(currentUserId: String): List<List<BoardCellStat
 private fun GameState.toEnemyBoard(currentUserId: String): List<List<BoardCellState>> {
     val shotsMade = if (currentUserId == hostUid) hostShotsMade else guestShotsMade
     val enemyShips = if (currentUserId == hostUid) guestShips else hostShips
+    val sunkCells = enemyShips.sunkCells(shotsMade)
 
     return buildBoard { cellIndex ->
         when {
+            cellIndex in sunkCells -> BoardCellState.Sunk
             cellIndex in shotsMade && enemyShips.any { cellIndex in it.cells } -> BoardCellState.Hit
             cellIndex in shotsMade -> BoardCellState.Miss
             else -> BoardCellState.Empty
@@ -681,10 +718,16 @@ private fun GameState.toEnemyBoard(currentUserId: String): List<List<BoardCellSt
     }
 }
 
+private fun List<com.example.seabattle.model.Ship>.sunkCells(hits: List<Int>): Set<Int> {
+    return this.filter { ship -> ship.cells.all(hits::contains) }
+        .flatMap { it.cells }
+        .toSet()
+}
+
 private fun buildBoard(cellStateProvider: (Int) -> BoardCellState): List<List<BoardCellState>> {
-    return List(BOARD_SIZE) { row ->
-        List(BOARD_SIZE) { column ->
-            val cellIndex = row * BOARD_SIZE + column
+    return List(FleetRules.BOARD_SIZE) { row ->
+        List(FleetRules.BOARD_SIZE) { column ->
+            val cellIndex = row * FleetRules.BOARD_SIZE + column
             cellStateProvider(cellIndex)
         }
     }
@@ -725,5 +768,3 @@ private fun <T : ViewModel> simpleFactory(create: () -> T): ViewModelProvider.Fa
         }
     }
 }
-
-private const val BOARD_SIZE = 5

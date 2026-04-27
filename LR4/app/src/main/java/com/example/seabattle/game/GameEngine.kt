@@ -11,13 +11,22 @@ object GameEngine {
 
         val updatedShotsMade = state.hostShotsMade + cellIndex
         val updatedGuestShotsReceived = state.guestShotsReceived + cellIndex
+        val isHit = isHit(state.guestShips, cellIndex)
         val hostWon = allShipCells(state.guestShips).all(updatedGuestShotsReceived::contains)
 
         return state.copy(
             hostShotsMade = updatedShotsMade,
             guestShotsReceived = updatedGuestShotsReceived,
-            currentTurnUid = if (hostWon) state.hostUid else state.guestUid.orEmpty(),
-            status = if (hostWon) GameStatus.FINISHED else GameStatus.GUEST_TURN,
+            currentTurnUid = when {
+                hostWon -> state.hostUid
+                isHit -> state.hostUid
+                else -> state.guestUid.orEmpty()
+            },
+            status = when {
+                hostWon -> GameStatus.FINISHED
+                isHit -> GameStatus.HOST_TURN
+                else -> GameStatus.GUEST_TURN
+            },
             winnerUid = if (hostWon) state.hostUid else null,
             updatedAt = System.currentTimeMillis(),
         )
@@ -29,13 +38,22 @@ object GameEngine {
 
         val updatedShotsMade = state.guestShotsMade + cellIndex
         val updatedHostShotsReceived = state.hostShotsReceived + cellIndex
+        val isHit = isHit(state.hostShips, cellIndex)
         val guestWon = allShipCells(state.hostShips).all(updatedHostShotsReceived::contains)
 
         return state.copy(
             guestShotsMade = updatedShotsMade,
             hostShotsReceived = updatedHostShotsReceived,
-            currentTurnUid = if (guestWon) state.guestUid.orEmpty() else state.hostUid,
-            status = if (guestWon) GameStatus.FINISHED else GameStatus.HOST_TURN,
+            currentTurnUid = when {
+                guestWon -> state.guestUid.orEmpty()
+                isHit -> state.guestUid.orEmpty()
+                else -> state.hostUid
+            },
+            status = when {
+                guestWon -> GameStatus.FINISHED
+                isHit -> GameStatus.GUEST_TURN
+                else -> GameStatus.HOST_TURN
+            },
             winnerUid = if (guestWon) state.guestUid else null,
             updatedAt = System.currentTimeMillis(),
         )

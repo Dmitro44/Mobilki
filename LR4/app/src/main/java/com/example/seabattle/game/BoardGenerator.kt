@@ -1,38 +1,32 @@
 package com.example.seabattle.game
 
 import com.example.seabattle.model.Ship
+import com.example.seabattle.model.ShipOrientation
 import kotlin.random.Random
 
 object BoardGenerator {
 
-    private const val BoardSize = 5
-    private val ShipSizes = listOf(3, 2, 2)
-
     fun generateFleet(random: Random = Random.Default): List<Ship> {
-        val occupied = mutableSetOf<Int>()
         val ships = mutableListOf<Ship>()
 
-        ShipSizes.forEach { size ->
+        FleetRules.REQUIRED_SHIP_SIZES.forEach { size ->
             var ship: Ship? = null
             while (ship == null) {
-                val horizontal = random.nextBoolean()
-                val row = random.nextInt(BoardSize)
-                val col = random.nextInt(BoardSize)
-                val cells = mutableListOf<Int>()
-
-                repeat(size) { step ->
-                    val nextRow = if (horizontal) row else row + step
-                    val nextCol = if (horizontal) col + step else col
-                    if (nextRow !in 0 until BoardSize || nextCol !in 0 until BoardSize) {
-                        cells.clear()
-                        return@repeat
-                    }
-                    cells += nextRow * BoardSize + nextCol
+                val orientation = if (random.nextBoolean()) {
+                    ShipOrientation.HORIZONTAL
+                } else {
+                    ShipOrientation.VERTICAL
                 }
+                val row = random.nextInt(FleetRules.BOARD_SIZE)
+                val col = random.nextInt(FleetRules.BOARD_SIZE)
+                val candidate = FleetRules.buildShip(
+                    startCell = FleetRules.cellIndex(row, col),
+                    size = size,
+                    orientation = orientation,
+                )
 
-                if (cells.size == size && cells.none(occupied::contains)) {
-                    occupied += cells
-                    ship = Ship(size = size, cells = cells)
+                if (candidate != null && FleetRules.canPlaceShip(ships, candidate)) {
+                    ship = candidate
                 }
             }
 

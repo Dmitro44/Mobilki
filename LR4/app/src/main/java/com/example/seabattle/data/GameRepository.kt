@@ -1,5 +1,6 @@
 package com.example.seabattle.data
 
+import com.example.seabattle.game.FleetRules
 import com.example.seabattle.game.GameEngine
 import com.example.seabattle.model.GameState
 import com.example.seabattle.model.GameStatus
@@ -74,7 +75,7 @@ class GameRepository(
         }.await()
     }
 
-    suspend fun markReady(gameId: String, uid: String, ships: List<Ship>) {
+    suspend fun setReady(gameId: String, uid: String, ships: List<Ship>, ready: Boolean) {
         val document = firestore.collection(FirebaseRefs.Games).document(gameId)
         firestore.runTransaction { transaction ->
             val snapshot = transaction.get(document)
@@ -83,6 +84,10 @@ class GameRepository(
             val guestUid = snapshot.getString("guestUid").orEmpty()
             val isHost = uid == hostUid
             check(isHost || uid == guestUid) { "Only participants can ready up" }
+            check(snapshot.getString("status") != GameStatus.FINISHED.name) { "Game is already finished" }
+            if (ready) {
+                check(FleetRules.isValidFleet(ships)) { "Fleet is invalid" }
+            }
 
             val updates = linkedMapOf<String, Any>(
                 "updatedAt" to System.currentTimeMillis(),
@@ -90,17 +95,24 @@ class GameRepository(
             )
 
             if (isHost) {
-                updates["hostReady"] = true
+                updates["hostReady"] = ready
                 updates["hostShips"] = ships.map(::shipToMap)
             } else {
-                updates["guestReady"] = true
+                updates["guestReady"] = ready
                 updates["guestShips"] = ships.map(::shipToMap)
             }
 
-            val hostReady = if (isHost) true else snapshot.getBoolean("hostReady") == true
-            val guestReady = if (!isHost) true else snapshot.getBoolean("guestReady") == true
+            val hostReady = if (isHost) ready else snapshot.getBoolean("hostReady") == true
+            val guestReady = if (!isHost) ready else snapshot.getBoolean("guestReady") == true
             if (hostReady && guestReady) {
                 updates["status"] = GameStatus.HOST_TURN.name
+                updates["currentTurnUid"] = hostUid
+            } else {
+                updates["status"] = if (guestUid.isBlank()) {
+                    GameStatus.WAITING_FOR_GUEST.name
+                } else {
+                    GameStatus.READY_CHECK.name
+                }
                 updates["currentTurnUid"] = hostUid
             }
 
@@ -169,7 +181,7 @@ class GameRepository(
             check(snapshot.getString("guestUid") == guestUid) { "Only guest can submit a guest shot" }
             check(snapshot.getString("status") == GameStatus.GUEST_TURN.name) { "It is not guest turn" }
             check((snapshot.get("pendingGuestShot") as? Map<*, *>) == null) { "Previous guest shot is still being processed" }
-            check(cellIndex in 0..24) { "Shot is out of board range" }
+            check(cellIndex in 0 until FleetRules.BOARD_CELL_COUNT) { "Shot is out of board range" }
             val shotsMade = ((snapshot.get("guestShotsMade") as? List<*>) ?: emptyList<Any>())
                 .mapNotNull { (it as? Number)?.toInt() }
             check(cellIndex !in shotsMade) { "Cell already targeted" }

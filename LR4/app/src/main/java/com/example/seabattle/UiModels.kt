@@ -25,6 +25,7 @@ enum class BoardCellState {
     Empty,
     Ship,
     Hit,
+    Sunk,
     Miss,
     Disabled,
     Selected
