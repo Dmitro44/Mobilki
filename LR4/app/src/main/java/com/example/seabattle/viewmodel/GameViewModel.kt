@@ -243,8 +243,21 @@ class GameViewModel(
                         selectedEnemyCell = null,
                     )
 
+                    if (game == null) {
+                        _uiState.value = _uiState.value.copy(
+                            gameId = "",
+                            localPlayerUid = null,
+                            localShips = emptyList(),
+                            selectedShipSize = FleetRules.REQUIRED_SHIP_SIZES.maxOrNull(),
+                            placementOrientation = ShipOrientation.HORIZONTAL,
+                            placementErrorMessage = null,
+                            isSubmittingGuestShot = false,
+                            selectedEnemyCell = null,
+                        )
+                        return@collectLatest
+                    }
+
                     if (
-                        game != null &&
                         game.hostUid == currentUserId &&
                         game.status == GameStatus.GUEST_TURN &&
                         game.pendingGuestShot != null &&

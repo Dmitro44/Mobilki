@@ -166,7 +166,15 @@ fun SeaBattleApp() {
         }
     }
 
-    LaunchedEffect(gameUiState.currentGame?.status, currentRoute) {
+    LaunchedEffect(gameUiState.gameId, gameUiState.currentGame, currentRoute) {
+        if (gameUiState.gameId.isNotBlank() && gameUiState.currentGame == null && currentRoute in setOf(AppRoute.Lobby, AppRoute.Battle)) {
+            navController.navigate(AppRoute.Home) {
+                popUpTo(AppRoute.Home) { inclusive = false }
+                launchSingleTop = true
+            }
+            return@LaunchedEffect
+        }
+
         val game = gameUiState.currentGame ?: return@LaunchedEffect
         when (game.status) {
             GameStatus.WAITING_FOR_GUEST,
@@ -551,9 +559,7 @@ private fun LobbyRoute(
     if (currentProfile == null || game == null) {
         EmptyState(
             title = "Lobby not ready",
-            message = "Create or join a game first.",
-            actionLabel = "Back",
-            onActionClick = {},
+            message = "Opponent disconnected",
             modifier = Modifier.padding(16.dp),
         )
         return
@@ -594,9 +600,7 @@ private fun BattleRoute(
     if (game == null) {
         EmptyState(
             title = "Battle unavailable",
-            message = "Join a lobby first.",
-            actionLabel = "Back",
-            onActionClick = {},
+            message = "Opponent disconnected",
             modifier = Modifier.padding(16.dp),
         )
         return

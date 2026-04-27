@@ -210,24 +210,8 @@ class GameRepository(
             val guestUid = snapshot.getString("guestUid").orEmpty()
 
             when (uid) {
-                hostUid -> transaction.delete(document)
-                guestUid -> transaction.update(
-                    document,
-                    mapOf(
-                        "guestUid" to null,
-                        "guestProfile" to null,
-                        "guestReady" to false,
-                        "guestShips" to emptyList<Map<String, Any>>(),
-                        "guestShotsReceived" to emptyList<Int>(),
-                        "guestShotsMade" to emptyList<Int>(),
-                        "pendingGuestShot" to null,
-                        "lastProcessedGuestRequestId" to null,
-                        "winnerUid" to null,
-                        "status" to GameStatus.WAITING_FOR_GUEST.name,
-                        "currentTurnUid" to hostUid,
-                        "updatedAt" to System.currentTimeMillis(),
-                    )
-                )
+                hostUid,
+                guestUid -> transaction.delete(document)
             }
         }.await()
     }
