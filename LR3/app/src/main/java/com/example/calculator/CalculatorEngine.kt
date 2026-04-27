@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.util.Stack
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 class CalculatorEngine {
     val mathContext: MathContext? = MathContext.UNLIMITED
@@ -187,7 +188,7 @@ class CalculatorEngine {
                 n.divide(BigDecimal.valueOf(2), MathContext.DECIMAL64)
             }
         } else {
-            BigDecimal(Math.sqrt(doubleVal))
+            BigDecimal(sqrt(doubleVal))
         }
 
         val two = BigDecimal.valueOf(2)
