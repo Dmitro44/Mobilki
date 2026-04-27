@@ -245,12 +245,6 @@ class GameViewModel(
 
                     if (game == null) {
                         _uiState.value = _uiState.value.copy(
-                            gameId = "",
-                            localPlayerUid = null,
-                            localShips = emptyList(),
-                            selectedShipSize = FleetRules.REQUIRED_SHIP_SIZES.maxOrNull(),
-                            placementOrientation = ShipOrientation.HORIZONTAL,
-                            placementErrorMessage = null,
                             isSubmittingGuestShot = false,
                             selectedEnemyCell = null,
                         )

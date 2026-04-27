@@ -194,6 +194,12 @@ fun SeaBattleApp() {
         }
     }
 
+    LaunchedEffect(gameUiState.gameId, gameUiState.currentGame, currentRoute) {
+        if (currentRoute == AppRoute.Home && gameUiState.gameId.isNotBlank() && gameUiState.currentGame == null) {
+            gameViewModel.clearLocalGame()
+        }
+    }
+
     if (!appUiState.isFirebaseConfigured) {
         FirebaseSetupRequiredScreen()
         return
@@ -346,7 +352,8 @@ fun SeaBattleApp() {
                         } else {
                             gameViewModel.guestFire(currentUserId, cellIndex)
                         }
-                    }
+                    },
+                    onDismissGameResult = topBarBackAction,
                 )
             }
 
@@ -593,6 +600,7 @@ private fun BattleRoute(
     appUiState: AppUiState,
     gameUiState: GameUiState,
     onFireAtCell: (Int) -> Unit,
+    onDismissGameResult: () -> Unit,
 ) {
     val currentUserId = appUiState.currentUserId.orEmpty()
     val game = gameUiState.currentGame
@@ -625,7 +633,7 @@ private fun BattleRoute(
         } else {
             "Your fleet has been destroyed. Return to the main menu."
         },
-        onDismissGameResult = {},
+        onDismissGameResult = onDismissGameResult,
     )
 }
 

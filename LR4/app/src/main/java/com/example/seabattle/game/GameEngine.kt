@@ -9,9 +9,22 @@ object GameEngine {
         require(state.status == GameStatus.HOST_TURN) { "Host turn expected" }
         require(cellIndex !in state.hostShotsMade) { "Cell already targeted" }
 
-        val updatedShotsMade = state.hostShotsMade + cellIndex
-        val updatedGuestShotsReceived = state.guestShotsReceived + cellIndex
-        val isHit = isHit(state.guestShips, cellIndex)
+        var updatedShotsMade = state.hostShotsMade + cellIndex
+        var updatedGuestShotsReceived = state.guestShotsReceived + cellIndex
+        
+        val hitShip = state.guestShips.find { cellIndex in it.cells }
+        val isHit = hitShip != null
+        
+        if (isHit) {
+            val isSunk = hitShip!!.cells.all { it in updatedGuestShotsReceived }
+            if (isSunk) {
+                val surrounding = getSurroundingCells(hitShip.cells)
+                val newShots = surrounding.filter { it !in updatedShotsMade }
+                updatedShotsMade = updatedShotsMade + newShots
+                updatedGuestShotsReceived = updatedGuestShotsReceived + newShots
+            }
+        }
+
         val hostWon = allShipCells(state.guestShips).all(updatedGuestShotsReceived::contains)
 
         return state.copy(
@@ -36,9 +49,22 @@ object GameEngine {
         require(state.status == GameStatus.GUEST_TURN) { "Guest turn expected" }
         require(cellIndex !in state.guestShotsMade) { "Cell already targeted" }
 
-        val updatedShotsMade = state.guestShotsMade + cellIndex
-        val updatedHostShotsReceived = state.hostShotsReceived + cellIndex
-        val isHit = isHit(state.hostShips, cellIndex)
+        var updatedShotsMade = state.guestShotsMade + cellIndex
+        var updatedHostShotsReceived = state.hostShotsReceived + cellIndex
+        
+        val hitShip = state.hostShips.find { cellIndex in it.cells }
+        val isHit = hitShip != null
+        
+        if (isHit) {
+            val isSunk = hitShip!!.cells.all { it in updatedHostShotsReceived }
+            if (isSunk) {
+                val surrounding = getSurroundingCells(hitShip.cells)
+                val newShots = surrounding.filter { it !in updatedShotsMade }
+                updatedShotsMade = updatedShotsMade + newShots
+                updatedHostShotsReceived = updatedHostShotsReceived + newShots
+            }
+        }
+
         val guestWon = allShipCells(state.hostShips).all(updatedHostShotsReceived::contains)
 
         return state.copy(
@@ -65,5 +91,22 @@ object GameEngine {
 
     fun allShipCells(ships: List<com.example.seabattle.model.Ship>): Set<Int> {
         return ships.flatMap { it.cells }.toSet()
+    }
+
+    private fun getSurroundingCells(shipCells: List<Int>): Set<Int> {
+        val surrounding = mutableSetOf<Int>()
+        for (cell in shipCells) {
+            val row = cell / 10
+            val col = cell % 10
+            for (r in maxOf(0, row - 1)..minOf(9, row + 1)) {
+                for (c in maxOf(0, col - 1)..minOf(9, col + 1)) {
+                    val neighbor = r * 10 + c
+                    if (neighbor !in shipCells) {
+                        surrounding.add(neighbor)
+                    }
+                }
+            }
+        }
+        return surrounding
     }
 }
