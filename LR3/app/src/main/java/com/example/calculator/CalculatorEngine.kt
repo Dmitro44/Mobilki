@@ -166,7 +166,11 @@ class CalculatorEngine {
                 val bInt = b.toInt()
                 if (b.compareTo(BigDecimal(bInt)) == 0) {
                     if (bInt >= 0) a.pow(bInt, mathContext)
-                    else BigDecimal.ONE.divide(a.pow(-bInt, mathContext), mathContext)
+                    else try {
+                        BigDecimal.ONE.divide(a.pow(-bInt, mathContext), mathContext)
+                    } catch (e: ArithmeticException) {
+                        BigDecimal.ONE.divide(a.pow(-bInt, mathContext), MathContext.DECIMAL64)
+                    }
                 } else {
                     BigDecimal(a.toDouble().pow(b.toDouble()), mathContext)
                 }
