@@ -8,6 +8,7 @@ import android.content.ClipboardManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -332,6 +333,7 @@ fun SeaBattleApp() {
                         gameViewModel.placeOrRemoveShipAt(FleetRules.cellIndex(row, column))
                     },
                     onClearPlacementClick = gameViewModel::clearPlacement,
+                    onPlacementErrorShown = gameViewModel::clearPlacementError,
                     onShareCode = {
                         gameUiState.gameId.takeIf { it.isNotBlank() }?.let { gameId ->
                             shareGameCode(activity, clipboardManager, gameId)
@@ -557,11 +559,19 @@ private fun LobbyRoute(
     onToggleOrientation: () -> Unit,
     onBoardCellClick: (Int, Int) -> Unit,
     onClearPlacementClick: () -> Unit,
+    onPlacementErrorShown: () -> Unit,
     onShareCode: () -> Unit,
 ) {
+    val context = LocalContext.current
     val currentUserId = appUiState.currentUserId.orEmpty()
     val currentProfile = appUiState.profile
     val game = gameUiState.currentGame
+
+    LaunchedEffect(gameUiState.placementErrorMessage) {
+        val message = gameUiState.placementErrorMessage ?: return@LaunchedEffect
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        onPlacementErrorShown()
+    }
 
     if (currentProfile == null || game == null) {
         EmptyState(

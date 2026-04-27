@@ -308,4 +308,8 @@ class GameViewModel(
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
+
+    fun clearPlacementError() {
+        _uiState.value = _uiState.value.copy(placementErrorMessage = null)
+    }
 }
