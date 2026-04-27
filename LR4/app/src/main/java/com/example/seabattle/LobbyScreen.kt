@@ -44,7 +44,6 @@ fun LobbyScreen(
     onBoardCellClick: (row: Int, column: Int) -> Unit,
     onClearPlacementClick: () -> Unit,
     onShareCodeClick: () -> Unit,
-    onLeaveClick: () -> Unit,
     modifier: Modifier = Modifier,
     isCurrentPlayerHost: Boolean = false,
     canStart: Boolean = false,
@@ -276,19 +275,13 @@ fun LobbyScreen(
             }
         }
 
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onLeaveClick) {
-                    Text("Leave")
-                }
-                if (isCurrentPlayerHost && canStart) {
-                    Text(
-                        text = "Battle starts automatically when both players are ready.",
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+        if (isCurrentPlayerHost && canStart) {
+            item {
+                Text(
+                    text = "Battle starts automatically when both players are ready.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -329,7 +322,6 @@ private fun LobbyScreenPreview() {
             onBoardCellClick = { _, _ -> },
             onClearPlacementClick = {},
             onShareCodeClick = {},
-            onLeaveClick = {},
             isCurrentPlayerHost = true,
             canStart = false
         )

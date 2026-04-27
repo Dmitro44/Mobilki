@@ -2,7 +2,6 @@ package com.example.seabattle
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,7 +10,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +33,6 @@ fun CreateJoinScreen(
     onJoinCodeChange: (String) -> Unit,
     onCreateLobbyClick: () -> Unit,
     onJoinLobbyClick: () -> Unit,
-    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     errorMessage: String? = null
@@ -127,11 +124,6 @@ fun CreateJoinScreen(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onBackClick) {
-                Text("Back")
-            }
-        }
     }
 }
 
@@ -145,7 +137,6 @@ private fun CreateJoinScreenPreview() {
             onJoinCodeChange = {},
             onCreateLobbyClick = {},
             onJoinLobbyClick = {},
-            onBackClick = {}
         )
     }
 }

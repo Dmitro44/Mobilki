@@ -191,12 +191,46 @@ fun SeaBattleApp() {
         return
     }
 
+    val showBackButton = when (currentRoute) {
+        AppRoute.Profile -> appUiState.profile?.isComplete == true
+        AppRoute.CreateJoin,
+        AppRoute.History,
+        AppRoute.Lobby,
+        AppRoute.Battle -> true
+        else -> false
+    }
+
+    val topBarBackAction: () -> Unit = {
+        when (currentRoute) {
+            AppRoute.CreateJoin,
+            AppRoute.History,
+            AppRoute.Profile -> navController.popBackStack()
+
+            AppRoute.Lobby -> {
+                appUiState.currentUserId?.let(gameViewModel::leaveGame)
+                navController.navigateSingleTop(AppRoute.Home)
+            }
+
+            AppRoute.Battle -> {
+                val currentGame = gameUiState.currentGame
+                if (currentGame?.isFinished == true) {
+                    gameViewModel.clearLocalGame()
+                } else {
+                    appUiState.currentUserId?.let(gameViewModel::leaveGame)
+                }
+                navController.navigateSingleTop(AppRoute.Home)
+            }
+
+            else -> Unit
+        }
+    }
+
     Scaffold(
         topBar = {
             AppTopBar(
                 currentRoute = currentRoute,
-                canGoBack = navController.previousBackStackEntry != null,
-                onBackClick = { navController.popBackStack() }
+                canGoBack = showBackButton,
+                onBackClick = topBarBackAction,
             )
         }
     ) { innerPadding ->
@@ -265,8 +299,7 @@ fun SeaBattleApp() {
                     onJoinLobby = { code ->
                         val profile = appUiState.profile ?: return@CreateJoinRoute
                         gameViewModel.joinGame(code, profile)
-                    },
-                    onBack = { navController.popBackStack() }
+                    }
                 )
             }
 
@@ -289,10 +322,6 @@ fun SeaBattleApp() {
                         gameUiState.gameId.takeIf { it.isNotBlank() }?.let { gameId ->
                             shareGameCode(activity, clipboardManager, gameId)
                         }
-                    },
-                    onLeave = {
-                        appUiState.currentUserId?.let(gameViewModel::leaveGame)
-                        navController.navigateSingleTop(AppRoute.Home)
                     }
                 )
             }
@@ -309,15 +338,6 @@ fun SeaBattleApp() {
                         } else {
                             gameViewModel.guestFire(currentUserId, cellIndex)
                         }
-                    },
-                    onExit = {
-                        val currentGame = gameUiState.currentGame
-                        if (currentGame?.isFinished == true) {
-                            gameViewModel.clearLocalGame()
-                        } else {
-                            appUiState.currentUserId?.let(gameViewModel::leaveGame)
-                        }
-                        navController.navigateSingleTop(AppRoute.Home)
                     }
                 )
             }
@@ -499,7 +519,6 @@ private fun CreateJoinRoute(
     gameUiState: GameUiState,
     onCreateLobby: () -> Unit,
     onJoinLobby: (String) -> Unit,
-    onBack: () -> Unit,
 ) {
     var joinCode by rememberSaveable { mutableStateOf("") }
 
@@ -509,7 +528,6 @@ private fun CreateJoinRoute(
         onJoinCodeChange = { joinCode = it.uppercase() },
         onCreateLobbyClick = onCreateLobby,
         onJoinLobbyClick = { onJoinLobby(joinCode) },
-        onBackClick = onBack,
         isLoading = gameUiState.isLoading,
         errorMessage = gameUiState.errorMessage,
     )
@@ -525,7 +543,6 @@ private fun LobbyRoute(
     onBoardCellClick: (Int, Int) -> Unit,
     onClearPlacementClick: () -> Unit,
     onShareCode: () -> Unit,
-    onLeave: () -> Unit,
 ) {
     val currentUserId = appUiState.currentUserId.orEmpty()
     val currentProfile = appUiState.profile
@@ -536,7 +553,7 @@ private fun LobbyRoute(
             title = "Lobby not ready",
             message = "Create or join a game first.",
             actionLabel = "Back",
-            onActionClick = onLeave,
+            onActionClick = {},
             modifier = Modifier.padding(16.dp),
         )
         return
@@ -557,7 +574,6 @@ private fun LobbyRoute(
         onBoardCellClick = onBoardCellClick,
         onClearPlacementClick = onClearPlacementClick,
         onShareCodeClick = onShareCode,
-        onLeaveClick = onLeave,
         isCurrentPlayerHost = game.hostUid == currentUserId,
         canStart = game.canStartBattle,
         isStarting = gameUiState.isLoading,
@@ -571,7 +587,6 @@ private fun BattleRoute(
     appUiState: AppUiState,
     gameUiState: GameUiState,
     onFireAtCell: (Int) -> Unit,
-    onExit: () -> Unit,
 ) {
     val currentUserId = appUiState.currentUserId.orEmpty()
     val game = gameUiState.currentGame
@@ -581,7 +596,7 @@ private fun BattleRoute(
             title = "Battle unavailable",
             message = "Join a lobby first.",
             actionLabel = "Back",
-            onActionClick = onExit,
+            onActionClick = {},
             modifier = Modifier.padding(16.dp),
         )
         return
@@ -606,8 +621,7 @@ private fun BattleRoute(
         } else {
             "Your fleet has been destroyed. Return to the main menu."
         },
-        onDismissGameResult = onExit,
-        onFinishClick = if (game.isFinished) onExit else onExit,
+        onDismissGameResult = {},
     )
 }
 
