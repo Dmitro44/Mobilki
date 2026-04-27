@@ -1,8 +1,10 @@
 package com.example.seabattle
 
+import com.example.seabattle.model.AvatarChoice
+
 data class LobbyPlayerUi(
     val name: String,
-    val avatar: String,
+    val avatar: AvatarChoice,
     val isReady: Boolean,
     val isHost: Boolean = false
 )

@@ -617,6 +617,7 @@ private fun BattleRoute(
     BattleScreen(
         ownBoard = game.toOwnBoard(currentUserId),
         enemyBoard = game.toEnemyBoard(currentUserId),
+        players = game.toLobbyPlayers(),
         currentTurnText = game.toTurnText(currentUserId),
         statusMessage = game.toBattleStatusMessage(currentUserId),
         onEnemyCellClick = { row, column ->
@@ -666,7 +667,7 @@ private fun GameState.toLobbyPlayers(): List<LobbyPlayerUi> {
     hostProfile?.let {
         items += LobbyPlayerUi(
             name = it.nickname,
-            avatar = it.avatarChoice.title,
+            avatar = it.avatarChoice,
             isReady = hostReady,
             isHost = true,
         )
@@ -674,7 +675,7 @@ private fun GameState.toLobbyPlayers(): List<LobbyPlayerUi> {
     guestProfile?.let {
         items += LobbyPlayerUi(
             name = it.nickname,
-            avatar = it.avatarChoice.title,
+            avatar = it.avatarChoice,
             isReady = guestReady,
             isHost = false,
         )

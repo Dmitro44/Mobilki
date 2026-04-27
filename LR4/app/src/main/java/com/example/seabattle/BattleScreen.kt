@@ -2,7 +2,9 @@ package com.example.seabattle
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,12 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.seabattle.model.AvatarChoice
 import com.example.seabattle.ui.theme.SeaBattleTheme
 
 @Composable
 fun BattleScreen(
     ownBoard: List<List<BoardCellState>>,
     enemyBoard: List<List<BoardCellState>>,
+    players: List<LobbyPlayerUi>,
     currentTurnText: String,
     statusMessage: String,
     onEnemyCellClick: (row: Int, column: Int) -> Unit,
@@ -60,6 +64,28 @@ fun BattleScreen(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
+
+        if (players.isNotEmpty()) {
+            Card {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    players.forEach { player ->
+                        PlayerIdentity(
+                            name = player.name,
+                            avatarChoice = player.avatar,
+                            modifier = Modifier.weight(1f),
+                            supportingText = if (player.isHost) "Host" else "Guest",
+                            avatarSize = 36.dp,
+                            nameTextStyle = MaterialTheme.typography.titleSmall,
+                        )
+                    }
+                }
+            }
+        }
 
         if (errorMessage != null) {
             AppStateCard(title = "Battle error", message = errorMessage)
@@ -159,6 +185,10 @@ private fun BattleScreenPreview() {
         BattleScreen(
             ownBoard = ownBoard,
             enemyBoard = enemyBoard,
+            players = listOf(
+                LobbyPlayerUi(name = "Cadet", avatar = AvatarChoice.CAPTAIN, isReady = true, isHost = true),
+                LobbyPlayerUi(name = "Skipper", avatar = AvatarChoice.ANCHOR, isReady = true),
+            ),
             currentTurnText = "Your turn",
             statusMessage = "Choose a cell on the enemy board. A hit keeps your turn alive.",
             selectedEnemyCell = BoardPosition(2, 4),

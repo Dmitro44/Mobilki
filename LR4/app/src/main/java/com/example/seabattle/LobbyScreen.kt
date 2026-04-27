@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.seabattle.game.FleetRules
+import com.example.seabattle.model.AvatarChoice
 import com.example.seabattle.model.Ship
 import com.example.seabattle.model.ShipOrientation
 import com.example.seabattle.ui.theme.SeaBattleTheme
@@ -234,27 +235,20 @@ fun LobbyScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = "${player.avatar} ${player.name}",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                        val roleLabel = buildString {
-                            if (player.isHost) append("Host")
-                            if (player.name == currentPlayerName) {
-                                if (isNotEmpty()) append(" • ")
-                                append("You")
-                            }
-                        }
-                        if (roleLabel.isNotEmpty()) {
-                            Text(
-                                text = roleLabel,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    val roleLabel = buildString {
+                        if (player.isHost) append("Host")
+                        if (player.name == currentPlayerName) {
+                            if (isNotEmpty()) append(" • ")
+                            append("You")
                         }
                     }
+                    PlayerIdentity(
+                        name = player.name,
+                        avatarChoice = player.avatar,
+                        modifier = Modifier.weight(1f),
+                        supportingText = roleLabel.ifEmpty { null },
+                        avatarSize = 44.dp,
+                    )
                     Text(
                         text = if (player.isReady) "Ready" else "Not ready",
                         color = if (player.isReady) {
@@ -332,8 +326,8 @@ private fun LobbyScreenPreview() {
         LobbyScreen(
             lobbyCode = "AB12",
             players = listOf(
-                LobbyPlayerUi(name = "Cadet", avatar = "🚢", isReady = true, isHost = true),
-                LobbyPlayerUi(name = "Skipper", avatar = "⚓", isReady = false)
+                LobbyPlayerUi(name = "Cadet", avatar = AvatarChoice.CAPTAIN, isReady = true, isHost = true),
+                LobbyPlayerUi(name = "Skipper", avatar = AvatarChoice.ANCHOR, isReady = false)
             ),
             currentPlayerName = "Cadet",
             isCurrentPlayerReady = false,
