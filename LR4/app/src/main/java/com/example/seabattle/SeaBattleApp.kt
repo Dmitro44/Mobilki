@@ -272,6 +272,16 @@ fun SeaBattleApp() {
         }
     }
 
+    val logout: () -> Unit = {
+        val currentUserId = appUiState.currentUserId
+        if (currentUserId != null) {
+            gameViewModel.leaveGame(currentUserId)
+        } else {
+            gameViewModel.clearLocalGame()
+        }
+        appViewModel.signOut()
+    }
+
     val topBarBackAction: () -> Unit = {
         when (currentRoute) {
             AppRoute.CreateJoin,
@@ -351,6 +361,7 @@ fun SeaBattleApp() {
                     onCreateJoinClick = { navController.navigateSingleTop(AppRoute.CreateJoin) },
                     onProfileClick = { navController.navigateSingleTop(AppRoute.Profile) },
                     onHistoryClick = { navController.navigateSingleTop(AppRoute.History) },
+                    onLogoutClick = logout,
                     onResumeLobbyClick = {
                         suppressedGameId = null
                         val target = when (gameUiState.currentGame?.status) {
@@ -535,6 +546,7 @@ private fun HomeRoute(
     onCreateJoinClick: () -> Unit,
     onProfileClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onLogoutClick: () -> Unit,
     onResumeLobbyClick: () -> Unit,
     onShareLobbyCodeClick: () -> Unit,
 ) {
@@ -544,6 +556,7 @@ private fun HomeRoute(
         onCreateJoinClick = onCreateJoinClick,
         onProfileClick = onProfileClick,
         onHistoryClick = onHistoryClick,
+        onLogoutClick = onLogoutClick,
         onResumeLobbyClick = onResumeLobbyClick,
         onShareLobbyCodeClick = onShareLobbyCodeClick,
         isLoading = appUiState.isLoading || gameUiState.isLoading,

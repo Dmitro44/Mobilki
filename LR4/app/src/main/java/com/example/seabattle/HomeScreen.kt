@@ -25,6 +25,7 @@ fun HomeScreen(
     onCreateJoinClick: () -> Unit,
     onProfileClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     errorMessage: String? = null,
@@ -122,6 +123,9 @@ fun HomeScreen(
                 OutlinedButton(onClick = onHistoryClick) {
                     Text("Match History")
                 }
+                OutlinedButton(onClick = onLogoutClick) {
+                    Text("Log out")
+                }
             }
         }
     }
@@ -137,6 +141,7 @@ private fun HomeScreenPreview() {
             onCreateJoinClick = {},
             onProfileClick = {},
             onHistoryClick = {},
+            onLogoutClick = {},
             onResumeLobbyClick = {},
             onShareLobbyCodeClick = {},
         )

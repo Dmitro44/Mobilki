@@ -137,6 +137,17 @@ class AppViewModel(
         }
     }
 
+    fun signOut() {
+        authRepository?.signOut()
+        _uiState.value = _uiState.value.copy(
+            isLoading = false,
+            currentUserId = null,
+            currentUserEmail = null,
+            profile = null,
+            errorMessage = null,
+        )
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }

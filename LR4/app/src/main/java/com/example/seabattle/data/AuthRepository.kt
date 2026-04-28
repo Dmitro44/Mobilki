@@ -11,6 +11,10 @@ class AuthRepository(
 
     fun currentUserEmail(): String? = auth.currentUser?.email
 
+    fun signOut() {
+        auth.signOut()
+    }
+
     suspend fun signIn(email: String, password: String): String {
         return auth.signInWithEmailAndPassword(email.trim(), password)
             .await()
