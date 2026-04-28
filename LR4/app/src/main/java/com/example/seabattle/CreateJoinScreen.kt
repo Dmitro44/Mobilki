@@ -13,11 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -37,13 +33,7 @@ fun CreateJoinScreen(
     isLoading: Boolean = false,
     errorMessage: String? = null
 ) {
-    val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
-    }
 
     Column(
         modifier = modifier
@@ -51,11 +41,11 @@ fun CreateJoinScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Create or Join",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+//        Text(
+//            text = "Create or Join",
+//            style = MaterialTheme.typography.headlineMedium,
+//            fontWeight = FontWeight.Bold
+//        )
         Text(
             text = "Player: $playerName",
             style = MaterialTheme.typography.bodyMedium,
@@ -96,9 +86,7 @@ fun CreateJoinScreen(
                 OutlinedTextField(
                     value = joinCode,
                     onValueChange = onJoinCodeChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
+                    modifier = Modifier.fillMaxWidth(),
                     label = { Text("Lobby code") },
                     placeholder = { Text("AB12") },
                     singleLine = true,
@@ -110,13 +98,17 @@ fun CreateJoinScreen(
                     keyboardActions = KeyboardActions(
                         onDone = {
                             if (joinCode.isNotBlank()) {
+                                keyboardController?.hide()
                                 onJoinLobbyClick()
                             }
                         }
                     ),
                 )
                 Button(
-                    onClick = onJoinLobbyClick,
+                    onClick = {
+                        keyboardController?.hide()
+                        onJoinLobbyClick()
+                    },
                     enabled = joinCode.isNotBlank()
                 ) {
                     Text("Join Lobby")

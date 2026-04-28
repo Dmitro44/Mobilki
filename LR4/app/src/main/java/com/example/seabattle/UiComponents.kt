@@ -267,8 +267,8 @@ fun BoardGrid(
     }
 
     val columnCount = board.maxOf { it.size }
-    val cellSpacing = if (columnCount >= 10) 2.dp else 4.dp
-    val rowLabelWidth = if (columnCount >= 10) 20.dp else 24.dp
+    val cellSpacing = if (columnCount >= 10) 1.dp else 4.dp
+    val rowLabelWidth = if (columnCount >= 10) 16.dp else 24.dp
     val minimumCellSize = if (columnCount >= 10) 24.dp else 32.dp
     val maximumCellSize = 36.dp
     val cellShape = RoundedCornerShape(if (columnCount >= 10) 4.dp else 6.dp)

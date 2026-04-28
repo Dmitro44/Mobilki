@@ -59,12 +59,6 @@ fun BattleScreen(
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Battle",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
         if (players.isNotEmpty()) {
             Card {
                 Row(

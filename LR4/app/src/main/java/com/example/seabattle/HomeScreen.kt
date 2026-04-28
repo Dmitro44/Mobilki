@@ -38,11 +38,11 @@ fun HomeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Sea Battle",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+//        Text(
+//            text = "Sea Battle",
+//            style = MaterialTheme.typography.headlineMedium,
+//            fontWeight = FontWeight.Bold
+//        )
         Text(
             text = "Welcome, $playerName",
             style = MaterialTheme.typography.bodyLarge,

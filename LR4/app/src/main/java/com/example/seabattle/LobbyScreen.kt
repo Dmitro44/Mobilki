@@ -64,14 +64,6 @@ fun LobbyScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            Text(
-                text = "Lobby",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
         if (isStarting) {
             item {
                 LoadingState(text = "Starting battle...")
@@ -110,7 +102,7 @@ fun LobbyScreen(
         item {
             Card {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     SectionTitle(text = "Ship placement")

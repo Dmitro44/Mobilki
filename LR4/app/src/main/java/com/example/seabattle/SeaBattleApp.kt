@@ -11,12 +11,14 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -107,6 +109,8 @@ fun SeaBattleApp() {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     val previousRoute = navController.previousBackStackEntry?.destination?.route
+    var showBattleLeaveConfirmation by rememberSaveable { mutableStateOf(false) }
+    var suppressedGameId by rememberSaveable { mutableStateOf<String?>(null) }
     val activity = context as? Activity
     val clipboardManager = remember(context) {
         context.getSystemService(ClipboardManager::class.java)
@@ -177,6 +181,8 @@ fun SeaBattleApp() {
         }
 
         val game = gameUiState.currentGame ?: return@LaunchedEffect
+        if (game.gameId == suppressedGameId) return@LaunchedEffect
+
         when (game.status) {
             GameStatus.WAITING_FOR_GUEST,
             GameStatus.READY_CHECK -> {
@@ -215,29 +221,87 @@ fun SeaBattleApp() {
         else -> false
     }
 
+    val leaveLobbyAndGoToCreateJoin: () -> Unit = {
+        suppressedGameId = gameUiState.currentGame?.gameId ?: gameUiState.gameId.takeIf { it.isNotBlank() }
+        val currentUserId = appUiState.currentUserId
+        if (currentUserId != null) {
+            gameViewModel.leaveGame(currentUserId)
+        } else {
+            gameViewModel.clearLocalGame()
+        }
+        if (!navController.popBackStack(AppRoute.CreateJoin, inclusive = false)) {
+            navController.navigate(AppRoute.CreateJoin) {
+                popUpTo(AppRoute.Lobby) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    val finishBattleAndGoHome: () -> Unit = {
+        suppressedGameId = gameUiState.currentGame?.gameId ?: gameUiState.gameId.takeIf { it.isNotBlank() }
+        gameViewModel.clearLocalGame()
+        if (!navController.popBackStack(AppRoute.Home, inclusive = false)) {
+            navController.navigate(AppRoute.Home) {
+                launchSingleTop = true
+            }
+        }
+    }
+
+    val confirmBattleLeaveAndGoHome: () -> Unit = {
+        suppressedGameId = gameUiState.currentGame?.gameId ?: gameUiState.gameId.takeIf { it.isNotBlank() }
+        val currentUserId = appUiState.currentUserId
+        if (currentUserId != null) {
+            gameViewModel.leaveGame(currentUserId)
+        } else {
+            gameViewModel.clearLocalGame()
+        }
+        showBattleLeaveConfirmation = false
+        if (!navController.popBackStack(AppRoute.Home, inclusive = false)) {
+            navController.navigate(AppRoute.Home) {
+                launchSingleTop = true
+            }
+        }
+    }
+
+    val battleBackAction: () -> Unit = {
+        val currentGame = gameUiState.currentGame
+        if (currentGame?.isFinished == true) {
+            finishBattleAndGoHome()
+        } else {
+            showBattleLeaveConfirmation = true
+        }
+    }
+
     val topBarBackAction: () -> Unit = {
         when (currentRoute) {
             AppRoute.CreateJoin,
             AppRoute.History,
             AppRoute.Profile -> navController.popBackStack()
 
-            AppRoute.Lobby -> {
-                appUiState.currentUserId?.let(gameViewModel::leaveGame)
-                navController.navigateSingleTop(AppRoute.Home)
-            }
+            AppRoute.Lobby -> leaveLobbyAndGoToCreateJoin()
 
-            AppRoute.Battle -> {
-                val currentGame = gameUiState.currentGame
-                if (currentGame?.isFinished == true) {
-                    gameViewModel.clearLocalGame()
-                } else {
-                    appUiState.currentUserId?.let(gameViewModel::leaveGame)
-                }
-                navController.navigateSingleTop(AppRoute.Home)
-            }
+            AppRoute.Battle -> battleBackAction()
 
             else -> Unit
         }
+    }
+
+    if (showBattleLeaveConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showBattleLeaveConfirmation = false },
+            title = { Text("Leave battle?") },
+            text = { Text("You will leave the current match and return to the main menu.") },
+            confirmButton = {
+                TextButton(onClick = confirmBattleLeaveAndGoHome) {
+                    Text("Leave")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBattleLeaveConfirmation = false }) {
+                    Text("Stay")
+                }
+            },
+        )
     }
 
     Scaffold(
@@ -288,6 +352,7 @@ fun SeaBattleApp() {
                     onProfileClick = { navController.navigateSingleTop(AppRoute.Profile) },
                     onHistoryClick = { navController.navigateSingleTop(AppRoute.History) },
                     onResumeLobbyClick = {
+                        suppressedGameId = null
                         val target = when (gameUiState.currentGame?.status) {
                             GameStatus.HOST_TURN,
                             GameStatus.GUEST_TURN,
@@ -309,9 +374,11 @@ fun SeaBattleApp() {
                     appUiState = appUiState,
                     gameUiState = gameUiState,
                     onCreateLobby = {
+                        suppressedGameId = null
                         appUiState.profile?.let(gameViewModel::createGame)
                     },
                     onJoinLobby = { code ->
+                        suppressedGameId = null
                         val profile = appUiState.profile ?: return@CreateJoinRoute
                         gameViewModel.joinGame(code, profile)
                     }
@@ -319,6 +386,10 @@ fun SeaBattleApp() {
             }
 
             composable(AppRoute.Lobby) {
+                BackHandler {
+                    leaveLobbyAndGoToCreateJoin()
+                }
+
                 LobbyRoute(
                     appUiState = appUiState,
                     gameUiState = gameUiState,
@@ -334,6 +405,10 @@ fun SeaBattleApp() {
                     },
                     onClearPlacementClick = gameViewModel::clearPlacement,
                     onPlacementErrorShown = gameViewModel::clearPlacementError,
+                    onLobbyUnavailable = {
+                        gameViewModel.clearLocalGame()
+                        navController.navigateSingleTop(AppRoute.CreateJoin)
+                    },
                     onShareCode = {
                         gameUiState.gameId.takeIf { it.isNotBlank() }?.let { gameId ->
                             shareGameCode(activity, clipboardManager, gameId)
@@ -343,6 +418,10 @@ fun SeaBattleApp() {
             }
 
             composable(AppRoute.Battle) {
+                BackHandler {
+                    battleBackAction()
+                }
+
                 BattleRoute(
                     appUiState = appUiState,
                     gameUiState = gameUiState,
@@ -560,6 +639,7 @@ private fun LobbyRoute(
     onBoardCellClick: (Int, Int) -> Unit,
     onClearPlacementClick: () -> Unit,
     onPlacementErrorShown: () -> Unit,
+    onLobbyUnavailable: () -> Unit,
     onShareCode: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -573,12 +653,13 @@ private fun LobbyRoute(
         onPlacementErrorShown()
     }
 
+    LaunchedEffect(currentProfile, game) {
+        if (currentProfile == null || game == null) {
+            onLobbyUnavailable()
+        }
+    }
+
     if (currentProfile == null || game == null) {
-        EmptyState(
-            title = "Lobby not ready",
-            message = "Opponent disconnected",
-            modifier = Modifier.padding(16.dp),
-        )
         return
     }
 
