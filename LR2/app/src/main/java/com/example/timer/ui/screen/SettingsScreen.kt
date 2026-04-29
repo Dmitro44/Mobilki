@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,9 +84,9 @@ fun SettingsScreen(
                     onToggle = viewModel::toggleDarkTheme
                 )
             }
-            
-            Divider()
-            
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
             // Font Size Section
             SettingsSection(
                 title = stringResource(R.string.font_size),
@@ -96,9 +97,9 @@ fun SettingsScreen(
                     onFontSizeSelected = viewModel::setFontSize
                 )
             }
-            
-            Divider()
-            
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
             // Language Section
             SettingsSection(
                 title = stringResource(R.string.language),

@@ -26,10 +26,4 @@ data class TimerSequenceModel(
             String.format(Locale.US, "%02d:%02d", minutes, seconds)
         }
     }
-    
-    fun isValid(): Boolean {
-        return name.isNotBlank() && phases.all { it.isValid() }
-    }
-    
-    fun hasPhases(): Boolean = phases.isNotEmpty()
 }

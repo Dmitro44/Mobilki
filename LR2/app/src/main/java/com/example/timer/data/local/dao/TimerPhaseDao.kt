@@ -14,7 +14,4 @@ interface TimerPhaseDao {
     
     @Query("DELETE FROM timer_phases WHERE sequence_id = :sequenceId")
     suspend fun deleteBySequenceId(sequenceId: Long)
-    
-    @Query("DELETE FROM timer_phases")
-    suspend fun deleteAll()
 }

@@ -58,7 +58,6 @@ fun SplashScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp),
             modifier = Modifier.alpha(alpha)
         ) {
-            // App icon with pulse animation
             Icon(
                 imageVector = Icons.Default.Timer,
                 contentDescription = stringResource(R.string.app_name),
@@ -67,19 +66,12 @@ fun SplashScreen(
                     .scale(scale),
                 tint = MaterialTheme.colorScheme.onPrimary
             )
-            
-            // App name
+
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary
-            )
-            
-            Text(
-                text = stringResource(R.string.splash_text),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
             )
         }
     }
