@@ -60,6 +60,9 @@ class CalculatorViewModel : ViewModel() {
             }
 
             if (lastChar in setOf('+', '-', '*', '/', '^') && op in setOf("+", "-", "*", "/", "^")) {
+                if (op == "-") {
+                    return@update state.copy(expression = expr + op)
+                }
                 return@update state.copy(expression = expr.dropLast(1) + op)
             }
 

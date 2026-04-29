@@ -29,6 +29,7 @@ class CalculatorEngineTest {
     fun testDivision() {
         assertEquals("0.5", engine.evaluate("1 / 2"))
         assertEquals("-2.5", engine.evaluate("-5 / 2"))
+        assertEquals("-5", engine.evaluate("25 / -5"))
     }
 
     @Test
