@@ -39,7 +39,7 @@
 
 #figure(
   rect(stroke: 1.5pt + black, inset: 0pt)[
-    #image("img/activity.png", width: 60%)
+    #image("img/activity.png", width: 80%)
   ],
   caption: [Диаграмма активностей выполнения таймера]
 ) <activityDiag>
