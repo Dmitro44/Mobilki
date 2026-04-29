@@ -3,7 +3,6 @@ package com.example.seabattle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -154,34 +152,45 @@ fun AvatarChoiceRow(
     onAvatarSelected: (AvatarChoice) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        avatarOptions.forEach { avatar ->
-            Card(
-                modifier = Modifier.clickable { onAvatarSelected(avatar) },
-                colors = CardDefaults.cardColors(
-                    containerColor = if (avatar == selectedAvatar) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceVariant
-                    }
-                )
+        avatarOptions.chunked(2).forEach { rowAvatars ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Image(
-                        painter = painterResource(avatar.drawableResId),
-                        contentDescription = avatar.title,
-                        modifier = Modifier.size(56.dp),
-                    )
-                    Text(text = avatar.title)
+                rowAvatars.forEach { avatar ->
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onAvatarSelected(avatar) },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (avatar == selectedAvatar) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            PlayerAvatar(
+                                avatarChoice = avatar,
+                                size = 56.dp,
+                            )
+                            Text(text = avatar.title)
+                        }
+                    }
+                }
+                if (rowAvatars.size == 1) {
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
         }

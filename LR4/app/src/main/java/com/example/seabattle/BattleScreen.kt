@@ -180,8 +180,8 @@ private fun BattleScreenPreview() {
             ownBoard = ownBoard,
             enemyBoard = enemyBoard,
             players = listOf(
-                LobbyPlayerUi(name = "Cadet", avatar = AvatarChoice.CAPTAIN, isReady = true, isHost = true),
-                LobbyPlayerUi(name = "Skipper", avatar = AvatarChoice.ANCHOR, isReady = true),
+                LobbyPlayerUi(name = "Player 1", avatar = AvatarChoice.VRUNGEL, isReady = true, isHost = true),
+                LobbyPlayerUi(name = "Player 2", avatar = AvatarChoice.PAPAI, isReady = true),
             ),
             currentTurnText = "Your turn",
             statusMessage = "Choose a cell on the enemy board. A hit keeps your turn alive.",

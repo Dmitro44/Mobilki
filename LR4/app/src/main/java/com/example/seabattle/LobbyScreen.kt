@@ -318,10 +318,10 @@ private fun LobbyScreenPreview() {
         LobbyScreen(
             lobbyCode = "AB12",
             players = listOf(
-                LobbyPlayerUi(name = "Cadet", avatar = AvatarChoice.CAPTAIN, isReady = true, isHost = true),
-                LobbyPlayerUi(name = "Skipper", avatar = AvatarChoice.ANCHOR, isReady = false)
+                LobbyPlayerUi(name = "Player 1", avatar = AvatarChoice.VRUNGEL, isReady = true, isHost = true),
+                LobbyPlayerUi(name = "Player 2", avatar = AvatarChoice.PAPAI, isReady = false)
             ),
-            currentPlayerName = "Cadet",
+            currentPlayerName = "Player 1",
             isCurrentPlayerReady = false,
             placedShips = emptyList(),
             remainingShipSizes = FleetRules.REQUIRED_SHIP_SIZES,

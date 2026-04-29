@@ -7,16 +7,16 @@ enum class AvatarChoice(
     val drawableResId: Int,
     val title: String,
 ) {
-    CAPTAIN(
-        storageName = "captain",
-        drawableResId = R.drawable.avatar_captain,
-        title = "Captain",
+    VRUNGEL(
+        storageName = "vrungel",
+        drawableResId = R.drawable.vrungel,
+        title = "Vrungel"
     ),
-    ANCHOR(
-        storageName = "anchor",
-        drawableResId = R.drawable.avatar_anchor,
-        title = "Anchor",
-    ),
+    PAPAI(
+        storageName = "papai",
+        drawableResId = R.drawable.papai,
+        title = "Papai"
+    )
 }
 
 fun avatarChoiceFromStorageName(value: String?): AvatarChoice? {

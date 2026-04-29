@@ -109,7 +109,7 @@ private fun ProfileScreenPreview() {
     SeaBattleTheme {
         ProfileScreen(
             playerName = "Cadet",
-            selectedAvatar = AvatarChoice.CAPTAIN,
+            selectedAvatar = AvatarChoice.VRUNGEL,
             avatarOptions = AvatarChoice.entries,
             gamesPlayed = 12,
             wins = 7,

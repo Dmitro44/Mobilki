@@ -576,7 +576,7 @@ private fun ProfileRoute(
         mutableStateOf(appUiState.profile?.nickname.orEmpty())
     }
     var selectedAvatar by rememberSaveable(appUiState.profile?.avatarChoice?.storageName) {
-        mutableStateOf(appUiState.profile?.avatarChoice ?: AvatarChoice.CAPTAIN)
+        mutableStateOf(appUiState.profile?.avatarChoice ?: AvatarChoice.VRUNGEL)
     }
 
     val avatarOptions = remember { AvatarChoice.entries }

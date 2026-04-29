@@ -334,7 +334,7 @@ private fun Map<*, *>.toProfile(): Profile? {
     val uid = this["uid"] as? String ?: return null
     val nickname = this["nickname"] as? String ?: ""
     val avatarChoice = com.example.seabattle.model.avatarChoiceFromStorageName(this["avatarChoice"] as? String)
-        ?: com.example.seabattle.model.AvatarChoice.CAPTAIN
+        ?: com.example.seabattle.model.AvatarChoice.VRUNGEL
     return Profile(uid, nickname, avatarChoice)
 }
 

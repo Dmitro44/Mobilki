@@ -14,7 +14,7 @@ class ProfileRepository(
         if (!snapshot.exists()) return null
 
         val avatarChoice = com.example.seabattle.model.avatarChoiceFromStorageName(snapshot.getString("avatarChoice"))
-            ?: AvatarChoice.CAPTAIN
+            ?: AvatarChoice.VRUNGEL
 
         return Profile(
             uid = uid,
