@@ -1,0 +1,39 @@
+@startuml
+title Диаграмма последовательности: подключение и подготовка к игре
+
+actor "Игрок 1" as Player1
+actor "Игрок 2" as Player2
+participant "Android приложение" as App
+participant "GameViewModel" as VM
+database "Firebase Firestore" as DB
+
+Player1 -> App: Создать лобби
+App -> VM: createGame(profile)
+VM -> DB: сохранить новую игру
+DB --> VM: код игры
+VM --> App: показать код лобби
+
+Player2 -> App: Ввести код игры
+App -> VM: joinGame(code, profile)
+VM -> DB: добавить второго игрока
+DB --> VM: обновленное состояние
+VM --> App: показать лобби
+
+Player1 -> App: Выбрать размер и клетку корабля
+App -> VM: placeOrRemoveShipAt(cell)
+VM -> VM: проверить правила расстановки
+VM --> App: показать корабль на поле
+
+Player2 -> App: Расставить свои корабли
+App -> VM: placeOrRemoveShipAt(cell)
+VM -> VM: проверить правила расстановки
+VM --> App: показать корабли на поле
+
+Player1 -> App: Готов
+Player2 -> App: Готов
+App -> VM: setReady(...)
+VM -> DB: сохранить корабли и готовность
+DB --> VM: игра началась
+VM --> App: открыть экран боя
+
+@enduml

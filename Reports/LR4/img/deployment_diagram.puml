@@ -1,0 +1,23 @@
+@startuml
+title Диаграмма развертывания
+
+node "Смартфон игрока 1" as Phone1 {
+    artifact "Sea Battle APK" as App1
+}
+
+node "Смартфон игрока 2" as Phone2 {
+    artifact "Sea Battle APK" as App2
+}
+
+cloud "Firebase" as Firebase {
+    database "Firestore\n(игры, профили, история)" as Firestore
+    node "Firebase Auth" as Auth
+}
+
+App1 --> Auth : вход/регистрация
+App2 --> Auth : вход/регистрация
+
+App1 --> Firestore : создать игру, ход, готовность
+App2 --> Firestore : подключиться, ход, готовность
+
+@enduml

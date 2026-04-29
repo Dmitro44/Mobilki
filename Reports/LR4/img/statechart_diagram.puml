@@ -1,0 +1,36 @@
+@startuml
+title Диаграмма состояний игры
+hide empty description
+
+state "Авторизация" as Auth
+state "Главное меню" as Home
+state "Лобби" as Lobby
+state "Ожидание игрока" as Waiting
+state "Расстановка кораблей" as Placement
+state "Бой" as Battle
+state "Ход игрока" as PlayerTurn
+state "Ход соперника" as EnemyTurn
+state "Конец игры" as GameOver
+
+[*] --> Auth
+Auth --> Home : успешный вход
+Home --> Lobby : создать / подключиться
+
+Lobby --> Waiting : создана комната
+Waiting --> Placement : второй игрок подключился
+Placement --> Battle : оба игрока готовы
+
+Battle --> PlayerTurn : ход текущего игрока
+PlayerTurn --> PlayerTurn : попадание
+PlayerTurn --> EnemyTurn : промах
+EnemyTurn --> PlayerTurn : соперник промахнулся
+
+PlayerTurn --> GameOver : победа
+EnemyTurn --> GameOver : поражение
+GameOver --> Home : назад в меню
+
+Lobby --> Home : выход из лобби
+Battle --> Home : выход из боя
+Home --> [*] : выход из аккаунта
+
+@enduml

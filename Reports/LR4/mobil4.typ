@@ -1,0 +1,168 @@
+#import "lib/stp2024.typ"
+#show: stp2024.template
+
+#include "lab_title.typ"
+
+#stp2024.full_outline()
+
+= Постановка задачи
+
+Целью лабораторной работы являлась разработка мобильного приложения «Морской бой» для операционной системы #emph("Android"). Приложение предназначено для игры двух пользователей по сети с использованием удаленного хранения состояния партии.
+
+В ходе выполнения работы необходимо было реализовать следующие возможности:
+
+- регистрацию и вход пользователя в приложение;
+- создание игрового лобби и подключение второго игрока по коду;
+- заполнение игрового поля кораблями с проверкой правил расстановки;
+- отображение списка игроков, их готовности и аватаров;
+- проведение боя по правилам игры «Морской бой»;
+- сохранение состояния игры в удаленной базе данных;
+- отображение результата боя и возврат в главное меню;
+- построение диаграмм последовательности, развертывания и состояний.
+
+= Выполнение работы
+
+== Архитектура приложения
+
+Приложение разработано на языке #emph("Kotlin") с использованием #emph("Jetpack Compose") для построения пользовательского интерфейса. Для хранения данных и синхронизации состояния игры используется #emph("Firebase Firestore"), а для авторизации пользователей -- #emph("Firebase Authentication").
+
+Основные части приложения:
+
+- #emph("SeaBattleApp") -- основной компонент навигации между экранами;
+- #emph("AppViewModel") -- управление авторизацией и профилем игрока;
+- #emph("GameViewModel") -- управление состоянием лобби, расстановкой кораблей и ходами;
+- #emph("GameRepository") -- работа с коллекциями Firestore;
+- #emph("GameEngine") -- логика обработки выстрелов и определения победителя;
+- экраны #emph("ProfileScreen"), #emph("LobbyScreen") и #emph("BattleScreen") -- пользовательский интерфейс основных частей приложения.
+
+На рисунках @sequenceDiagram, @deploymentDiagram и @stateDiagram представлены основные диаграммы проекта.
+
+#figure(
+  rect(stroke: 1.5pt + black, inset: 0pt)[
+    #image("img/sequence_diag.png", width: 70%)
+  ],
+  caption: [Диаграмма последовательности подключения к игре],
+) <sequenceDiagram>
+
+#figure(
+  rect(stroke: 1.5pt + black, inset: 0pt)[
+    #image("img/deployment_diag.png", width: 70%)
+  ],
+  caption: [Диаграмма развертывания приложения],
+) <deploymentDiagram>
+
+#figure(
+  rect(stroke: 1.5pt + black, inset: 0pt)[
+    #image("img/statechart_diag.png", width: 70%)
+  ],
+  caption: [Диаграмма состояний игры],
+) <stateDiagram>
+
+== Профиль пользователя
+
+После входа пользователь может настроить профиль: указать имя и выбрать аватар. Выбранный аватар сохраняется вместе с профилем и далее используется в лобби и на экране боя. Для аватаров используется перечисление #emph("AvatarChoice"), а выбранное значение сохраняется в базе данных как строковый идентификатор.
+
+На рисунке @profileScreen представлен экран профиля пользователя.
+
+#figure(
+  rect(stroke: 1.5pt + black, inset: 0pt)[
+    #image("img/profile.jpg", width: 40%)
+  ],
+  caption: [Экран профиля пользователя],
+) <profileScreen>
+
+== Создание лобби и расстановка кораблей
+
+Игрок может создать новое лобби или подключиться к существующему по коду. После подключения оба игрока переходят на экран лобби. На этом экране отображается код комнаты, список игроков, состояние готовности и поле для расстановки кораблей.
+
+Расстановка кораблей выполняется на поле 10 на 10 клеток. Пользователь выбирает размер корабля и его ориентацию. При попытке поставить корабль в неправильное место приложение показывает сообщение об ошибке. После размещения всех кораблей игрок может отметить себя готовым.
+
+На рисунке @lobbyScreen представлен экран лобби.
+
+#figure(
+  rect(stroke: 1.5pt + black, inset: 0pt)[
+    #image("img/lobby.jpg", width: 40%)
+  ],
+  caption: [Экран лобби и расстановки кораблей],
+) <lobbyScreen>
+
+== Игровой процесс
+
+После готовности двух игроков начинается бой. В игре отображаются два поля: собственное поле игрока и поле соперника. Игрок выбирает клетку на поле соперника. Если попадание успешно, игрок продолжает ход. При промахе ход передается сопернику.
+
+При уничтожении корабля клетки вокруг него автоматически отмечаются как недоступные для дальнейших выстрелов, так как по правилам корабли не могут касаться друг друга. Победителем становится игрок, уничтоживший все корабли соперника.
+
+На рисунке @battleScreen представлен экран сражения.
+
+#figure(
+  rect(stroke: 1.5pt + black, inset: 0pt)[
+    #image("img/battle.jpg", width: 40%)
+  ],
+  caption: [Экран сражения],
+) <battleScreen>
+
+== Навигация и выход из игры
+
+В приложении реализована обработка кнопки возврата и системного жеста назад. В лобби выход выполняется сразу, так как игрок еще не начал бой. На экране сражения перед выходом показывается диалог подтверждения, чтобы пользователь случайно не покинул матч.
+
+При выходе игрока из лобби или боя локальное состояние очищается, а запись игры удаляется из Firestore. Это позволяет второму игроку корректно получить информацию о завершении текущей партии или отключении соперника.
+
+#stp2024.heading_unnumbered[Вывод]
+
+В ходе лабораторной работы было разработано мобильное приложение «Морской бой» для Android. В приложении реализованы авторизация пользователей, настройка профиля, создание и подключение к игровому лобби, расстановка кораблей, сетевой обмен состоянием через Firebase Firestore и проведение боя между двумя игроками. Также были построены диаграммы последовательности, развертывания и состояний, описывающие основные части работы приложения.
+
+#stp2024.appendix(title: [Листинг программного кода], type: [обязательное], [
+
+  #stp2024.listing[Обработка выстрела игрока в GameEngine][
+    ```kotlin
+      fun applyHostShot(state: GameState, cellIndex: Int): GameState {
+          require(state.status == GameStatus.HOST_TURN) { "Host turn expected" }
+          require(cellIndex !in state.hostShotsMade) { "Cell already targeted" }
+
+          var updatedShotsMade = state.hostShotsMade + cellIndex
+          var updatedGuestShotsReceived = state.guestShotsReceived + cellIndex
+
+          val hitShip = state.guestShips.find { cellIndex in it.cells }
+          val isHit = hitShip != null
+
+          val hostWon = allShipCells(state.guestShips).all(updatedGuestShotsReceived::contains)
+
+          return state.copy(
+              hostShotsMade = updatedShotsMade,
+              guestShotsReceived = updatedGuestShotsReceived,
+              status = if (hostWon) GameStatus.FINISHED else state.status,
+              winnerUid = if (hostWon) state.hostUid else null,
+          )
+      }
+    ```
+  ]
+
+  #stp2024.listing[Создание игры в GameRepository][
+    ```kotlin
+      suspend fun createGame(hostUid: String, hostProfile: Profile): String {
+          val gameId = buildGameId()
+          firestore.collection(FirebaseRefs.Games)
+              .document(gameId)
+              .set(
+                  mapOf(
+                      "gameId" to gameId,
+                      "hostUid" to hostUid,
+                      "hostProfile" to profileToMap(hostProfile),
+                      "status" to GameStatus.WAITING_FOR_GUEST.name,
+                  )
+              )
+              .await()
+          return gameId
+      }
+    ```
+  ]
+
+  #stp2024.listing[Переход из лобби по кнопке назад][
+    ```kotlin
+      BackHandler {
+          leaveLobbyAndGoToCreateJoin()
+      }
+    ```
+  ]
+
+])
